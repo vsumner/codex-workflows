@@ -14,5 +14,7 @@ Execution contract:
 - If a delegated worker fails because of role, model, config, or repeated stall issues, fix the lane or downgrade topology explicitly; do not keep retrying the same broken path.
 - If execution falls back from team mode to solo/local execution, say so in chat and in `execution-summary.md`.
 - If execution materially invalidates the plan, step back to Plan instead of improvising a new one silently.
-- Mark Execute complete in `update_plan` before handing off to Verify.
-- Return: chosen topology, chosen execute mode, accepted packets, failed or blocked packets, evidence, and next step.
+- When the active slice is accepted and Verify is required, do not stop with a manual Verify suggestion; transition into Verify automatically unless the user asked to pause.
+- Before the Execute -> Verify transition, prefer native thread compaction; otherwise start Verify from artifacts in a fresh thread/context.
+- Mark Execute complete in `update_plan` before handing off or continuing into Verify.
+- Return: chosen topology, chosen execute mode, accepted packets, failed or blocked packets, evidence, and next phase or exact blocker.

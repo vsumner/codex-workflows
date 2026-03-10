@@ -20,6 +20,7 @@ Run Victor's full personal workflow:
 - Infer the minimal necessary phase span from the request and current artifacts before doing work.
 - Infer topology and artifact weight before defaulting to the heaviest path.
 - Use native thread lifecycle semantics for continuity.
+- Prefer native thread compaction at long or noisy phase boundaries; when it is unavailable, start the next phase from artifacts in a fresh thread/context.
 - For non-trivial work, maintain a native `update_plan` checklist in parallel with repo artifacts.
 - Use `update_plan` for live progress only; use RPIV artifacts for durable state.
 - Use `request_user_input` only for material decision forks that cannot be resolved safely from context.
@@ -80,7 +81,20 @@ Minimum artifacts for non-trivial work:
 4. Use `workflow-plan-codex` when Plan is required.
 5. Use `workflow-execute-codex` when Execute is required.
 6. Use `workflow-verify-codex` when Verify is required.
-7. Run `workflow-review-codex` when risk warrants it or when Verify escalates to Review.
+7. Use `workflow-fix-loop-codex` automatically when Verify fails with a bounded remediation path.
+8. Run `workflow-review-codex` when risk warrants it or when Verify escalates to Review.
+
+## Phase-Boundary Continuation Rules
+1. When Execute reaches an accepted slice and Verify is required, transition into Verify automatically unless the user asked to pause.
+2. Before Execute -> Verify, Verify -> fix loop, or Verify -> next Execute, prefer native thread compaction; otherwise reopen the next phase from artifacts in a fresh thread/context.
+3. When Verify fails with a bounded remediation path, auto-enter `workflow-fix-loop-codex`, rerun only impacted checks, and cap the same failing set at 2 loops before escalation.
+4. When Verify passes and `features.json` still has unblocked work, decide whether it is safe to continue and, if so, resume Execute on the next packet instead of stopping for a manual prompt.
+5. Safe continuation requires all of the following:
+   - no unresolved material decision fork
+   - no stale plan or validation contract
+   - no permission or environment blocker that requires human action
+   - no exhausted remediation-loop cap
+6. If safe continuation fails, stop with one exact next step instead of a vague phase suggestion.
 
 ## `update_plan` Rules
 1. Create a short checklist for non-trivial runs.

@@ -12,8 +12,12 @@ Execution contract:
 - For non-trivial work, maintain a short native `update_plan` checklist; use native `request_user_input` only for material workflow forks.
 - When the blocker is filesystem or network access, prefer native `request_permissions` with the smallest fitting named permission profile.
 - Keep human decision forks and capability escalation separate.
+- Prefer native thread compaction at long or noisy phase boundaries; otherwise start the next phase from artifacts in a fresh thread/context.
 - Prefer the built-in `explorer` for bounded codebase lookups and full Research only when planner-ready artifacts or deeper evidence are required.
 - Keep artifact weight proportional to the work: compact for `lightweight`, durable and resumable for `standard` or `graph`.
 - If delegated phase work stalls or fails, write the current artifact state, downgrade topology or step back to the earliest invalid phase explicitly, and return one clear next step.
+- Execute -> Verify is automatic by default once the active slice is accepted and Verify is required.
+- Verify -> fix loop is automatic when failed assertions have a bounded remediation path; cap the same failing set at 2 loops before escalation.
+- Verify -> next Execute wave is automatic when the current slice passes, more unblocked work remains, and no material safety blocker remains.
 - Do not stop while later required phases or obvious next actions remain unless the user asked to pause.
-- Return: inferred phase span, active topology, active execute mode when relevant, artifact weight, artifact paths, blockers, and next step.
+- Return: inferred phase span, active topology, active execute mode when relevant, artifact weight, artifact paths, blockers, and next phase or exact next step.

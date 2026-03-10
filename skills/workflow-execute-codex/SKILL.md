@@ -54,7 +54,9 @@ Read:
 - If execution falls back from team mode to solo because delegation is unavailable, state that topology change explicitly in chat and in `execution-summary.md`.
 - Low-risk execution ambiguity may continue in `autonomous` modes, but material forks still require `request_user_input`.
 - If reality invalidates the plan materially, stop and return to planning.
-- Mark Execute complete in `update_plan` before handing off to Verify.
+- When the active slice is accepted and Verify is required, do not stop with a manual Verify recommendation; transition into Verify automatically unless the user asked to pause.
+- Before the Execute -> Verify transition, prefer native thread compaction; if unavailable or inappropriate, start Verify from artifacts in a fresh thread/context.
+- Mark Execute complete in `update_plan` before handing off or continuing into Verify.
 
 ## References
 - `../../playbooks/personal-swarm-workflow.md`

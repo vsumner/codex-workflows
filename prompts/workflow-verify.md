@@ -13,5 +13,8 @@ Execution contract:
 - Use `/verify-gates` for command-level scrutiny by default and add broader behavior or review lanes only when the risk justifies them.
 - If delegated validators fail, time out, or return partial evidence, continue locally, record the current evidence, and end with `passed`, `failed`, or `blocked` rather than stalling.
 - If verification exposes a stale plan or graph, step back to the earliest invalid phase instead of forcing the fix through Verify.
+- If verification fails with a bounded remediation path, auto-enter `workflow-fix-loop-codex` after thread compaction or fresh-context restart when needed.
+- If verification passes and more unblocked work remains, decide whether safe continuation holds and resume Execute automatically when it does.
+- Limit the same failing set to 2 automatic fix loops before escalation.
 - Mark Verify complete in `update_plan` only when required assertions are resolved.
-- Return: chosen proof weight, chosen topology, overall verdict, failed or blocked assertions, and remediation recommendation.
+- Return: chosen proof weight, chosen topology, overall verdict, failed or blocked assertions, and next phase or remediation recommendation.
