@@ -60,7 +60,10 @@ Use these operator commands directly in chat.
 - RPIV should use native `update_plan` automatically for non-trivial runs.
 - `update_plan` should stay short, phase-first, and not mirror `features.json`.
 - RPIV should use native `request_user_input` only for material decision forks.
+- RPIV should use native `request_permissions` plus named permission profiles when the blocker is filesystem or network access.
 - `request_user_input` should stay main-thread only and should not be used for routine ambiguity.
+- Keep human decisions and capability escalation separate: `request_user_input` for workflow direction, `request_permissions` for structured access expansion.
+- Prefer a relevant plugin-backed skill, MCP server, or app when one already packages the needed capability.
 - `workflow-learning-tests` is the Research subroutine for proving uncertain behavior.
 - `/simplify` is the optional Execute refinement pass after packet execution stabilizes.
   It stays a skill plus prompt wrapper, not a role or separate RPIV phase.
@@ -99,6 +102,8 @@ Use these operator commands directly in chat.
 - "what phase is this in / what's the workflow status" -> `/prompts:workflow-status`
 - "create a workflow / refactor this workflow / should this be a skill or role" -> `/prompts:workflow-authoring`
 - "run bug scanner autopilot / scan and auto-fix UBS findings" -> `/prompts:bug-scanner-autopilot`
+- "I need more access / let this use the network / allow writes outside the current sandbox" -> native permissions profile + `request_permissions`
+- "use plugin X / try the plugin for this" -> prefer the matching plugin-backed skill, MCP server, or app; use `@plugin` when explicit plugin mention helps
 - "speed this up / fastest mode" -> `/fast on`
 
 ## Behavior
@@ -106,6 +111,9 @@ Use these operator commands directly in chat.
 - `/fast` is a service-tier toggle: `on` sets `service_tier = "fast"` and `off` clears it.
 - Fast mode commands are available only when `features.fast_mode = true`.
 - `/apps` is available only when `features.apps = true`, and connector mentions use `$`.
+- Native plugins are capability bundles; prefer them when they already package the needed skill, MCP server, or app.
+- Keep access expansion separate from workflow branching: use `request_permissions` for structured permission escalation and `request_user_input` for human decisions.
+- When a command needs interactive shell behavior or streaming output semantics, prefer PTY/TTY-capable exec paths.
 - `review-workflow` is the canonical review workflow when Victor asks for review in natural language.
 - Use native `/review` when Victor explicitly asks for it or wants the built-in reviewer specifically.
 - Use `review-workflow` when you want parallel reviewer agents, PR-comment dedupe, security/adversarial lanes, or review-to-verify/apply orchestration.

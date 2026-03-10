@@ -99,6 +99,13 @@ Minimum artifacts for non-trivial work:
 5. Do not use it for routine ambiguity, missing low-risk details, or things Codex can infer.
 6. Do not delegate a worker that depends on `request_user_input`.
 
+## `request_permissions` Rules
+1. Use it when the blocker is filesystem or network access rather than a human workflow decision.
+2. Request the smallest named permission profile that unblocks the immediate next step.
+3. Prefer stable config-backed profile names over ad hoc prose about needing more access.
+4. Do not substitute `request_permissions` for product, scope, or remediation decisions.
+5. Keep access expansion separate from planning forks in status updates and artifacts.
+
 ## Prompt Contracts
 - Use explicit output contracts for phase outputs and handoffs.
 - Use explicit completeness contracts for multi-phase runs so RPIV does not stop at a plausible midpoint.

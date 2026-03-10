@@ -88,6 +88,8 @@ Apply them selectively:
 - Treat autopilot-like behavior as Execute-mode state (`approval_gated`, `autonomous`, `parallel_autonomous`) unless there is proof it needs a different abstraction.
 - Do not create a role for an orchestrator behavior.
 - Do not create a home-level explorer role when the built-in `explorer` already fits the job.
+- Treat named permission profiles and native `request_permissions` as first-class native surfaces, not as a cue to invent a workflow-specific approval abstraction.
+- Treat plugins as native capability bundles; if a plugin already supplies the needed skill, MCP server, or app, prefer that route over creating a parallel home-level workflow surface.
 - Do not leave both old and new public names active unless compatibility is temporarily necessary.
 - If compatibility is needed, mark the old surface as an alias and remove it once the new model sticks.
 - If a surface is obsolete, move it out of active discovery roots and update docs.

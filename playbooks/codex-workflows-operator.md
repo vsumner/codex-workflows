@@ -11,6 +11,8 @@ Inference-first default:
 - ask only when the ambiguity would materially change behavior
 - use native `update_plan` automatically for non-trivial runs
 - use native `request_user_input` only for material forks that cannot be inferred safely
+- use native `request_permissions` plus named permission profiles when the blocker is filesystem or network access
+- prefer plugin-backed capabilities when a plugin already bundles the needed skill, MCP server, or app
 - use native thread lifecycle semantics for continuity
 
 ## Command Matrix
@@ -134,6 +136,10 @@ Inference-first default:
 1. main thread only
 2. short structured questions
 3. only when the answer materially changes the workflow
+- When the blocker is access rather than direction, prefer native `request_permissions` with the smallest named profile that unblocks the next step.
+- Keep these surfaces separate:
+1. `request_user_input` for human workflow decisions
+2. `request_permissions` for structured filesystem/network escalation
 - For continuity, prefer native thread lifecycle:
 1. continue same thread when coherent
 2. resume before recreating

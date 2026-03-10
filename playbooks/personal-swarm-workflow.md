@@ -204,8 +204,8 @@ Verification proof weight is inferred:
 - If the initiative changes mid-run, restate the new target, preserve compatible artifacts, and retire superseded work explicitly.
 
 ## Model Policy
-- Orchestrator, architecture analysis, planning, final verification, final review: deep model with `high`.
-- Bounded implementation: `gpt-5.3-codex-spark`.
+- Orchestrator, architecture analysis, final verification, and final review: deep model with `high`.
+- Planning and bounded implementation: `gpt-5.4` with `medium` reasoning.
 - Use Spark only when packet scope is narrow and explicit.
 - Concurrency is constrained by review capacity, not by eagerness to parallelize.
 
@@ -335,6 +335,15 @@ The remaining active utilities are part of RPIV, not alternate workflows.
 - Keep it main-thread only.
 - Keep prompts short and structured.
 - Do not use it for routine ambiguity or details that can be inferred safely.
+
+## Native Permission Integration
+- Use named permission profiles plus native `request_permissions` when the blocker is filesystem or network access, not product direction.
+- Keep permission requests minimal and task-scoped; ask for the smallest profile that unblocks the next step.
+- Prefer stable profile names in config over ad hoc prose about "more access".
+- Keep workflow doctrine separate:
+1. `request_user_input` for human decisions
+2. `request_permissions` for structured capability escalation
+- Do not build repo-local approval wrappers when the native permission surface already fits.
 
 ## Anti-Patterns
 - Orchestrator doing execution work

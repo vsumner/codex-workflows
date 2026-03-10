@@ -46,9 +46,9 @@ Natural-language triggers:
 - Workers: execute bounded tasks only.
 
 Model routing:
-1. Planner: `gpt-5.3-codex` (`xhigh`)
+1. Planner: `gpt-5.4` (`medium`)
 2. Orchestrator: deep model (`high`)
-3. Workers: `gpt-5.3-codex-spark` (`high` or `xhigh` for bounded tasks)
+3. Workers: `gpt-5.4` (`medium` for bounded tasks)
 4. Learning tester / verifier / reviewer: deep model (`high`)
 
 ## Learning-Test Gate

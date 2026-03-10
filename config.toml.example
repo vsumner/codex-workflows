@@ -4,7 +4,7 @@
 # Set required env vars such as `CONTEXT7_API_KEY` in your shell.
 
 model = "gpt-5.4"
-review_model = "gpt-5.3-codex"
+review_model = "gpt-5.4"
 plan_mode_reasoning_effort = "xhigh"
 model_reasoning_effort = "high"
 personality = "pragmatic"
@@ -29,6 +29,28 @@ default_mode_request_user_input = true
 js_repl = true
 prevent_idle_sleep = true
 apps = true
+
+# Optional native capability bundles to enable once you want them in your stack:
+# plugins = true
+# guardian_approval = true
+# request_permissions_tool = true
+# js_repl_tools_only = true  # advanced: route direct tool use through `js_repl` + `codex.tool(...)`
+
+# Optional named permissions profiles.
+# Add these if you want structured filesystem/network escalation through
+# native `request_permissions` rather than only free-form user approval.
+#
+# default_permissions = "workspace"
+#
+# [permissions.workspace.filesystem]
+# ":minimal" = "read"
+#
+# [permissions.workspace.filesystem.":project_roots"]
+# "." = "write"
+# "docs" = "read"
+#
+# [permissions.workspace.network]
+# enabled = false
 
 [history]
 persistence = "save-all"
