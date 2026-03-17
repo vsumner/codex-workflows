@@ -45,7 +45,7 @@ just sync-home
 just install-home
 ```
 
-- `just preflight` validates the tracked shareable surface, checks key native model/feature/command/role/tool drift against a local upstream Codex clone when available, and checks that the live `~/.codex` install matches it.
+- `just preflight` validates the tracked shareable surface, checks key native model/feature/command/role/tool drift against a local upstream Codex clone when available, verifies upstream surface triage coverage in `playbooks/upstream-surface-triage.md`, and checks that the live `~/.codex` install matches it.
 - `just gate-shareable` runs `preflight`, installs into a temp Codex home, and re-runs the
   checker against that temp tree so install drift shows up before handoff.
 - If `just` is unavailable, run `./scripts/check-shareable.sh` directly. You can override the upstream clone path with `--upstream-codex /path/to/codex`.

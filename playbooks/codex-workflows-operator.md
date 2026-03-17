@@ -11,14 +11,16 @@ Inference-first default:
 - ask only when the ambiguity would materially change behavior
 - use native `update_plan` automatically for non-trivial runs
 - use native `request_user_input` only for material forks that cannot be inferred safely
-- use native `request_permissions` plus named permission profiles when the blocker is filesystem or network access
-- prefer plugin-backed capabilities when a plugin already bundles the needed skill, MCP server, or app
 - use native thread lifecycle semantics for continuity
 
 ## Command Matrix
 - `/plan <task>`: enter Plan mode; with inline text, immediately submit the planning request.
+- `/model`: open the model/reasoning picker.
 - `/fast [on|off|status]`: toggle Fast mode (service tier).
+- `/status`: show active session state, including model and token usage.
 - `/review`: run standard review flow on current changes.
+- `/diff`: inspect current git changes before review or remediation.
+- `/init`: create an `AGENTS.md` starter for the current repo.
 - `/review <instructions>`: run targeted review with custom scope/criteria.
 - `/simplify`: run post-change simplify triage (reuse, quality, efficiency), optionally apply minimal fixes.
 - `/prompts:workflow-rpiv`: canonical launch path for the personal RPIV workflow.
@@ -29,8 +31,12 @@ Inference-first default:
 - `/prompts:workflow-review`: canonical launch path for a dedicated review team.
 - `/prompts:workflow-authoring`: canonical launch path for workflow-surface authoring and refactoring.
 - `/agent`: open the agent/thread picker (switch/resume/close via picker UI).
+- `/new`: start a fresh thread when the current transcript is no longer the right continuity anchor.
 - `/skills`: inspect available skills.
+- `/statusline`: configure what the native footer exposes.
+- `/mcp`: inspect configured MCP tools and connectivity.
 - `/apps`: manage available/connected apps and connectors.
+- `/personality`: change the native communication preset.
 - `/collab`: open collaboration mode picker (mode selection, not agent spawning).
 - `/experimental`: toggle experimental features (including multi-agent).
 - `/prompts:<name> [args]`: expand and run a saved custom prompt template.
@@ -52,8 +58,10 @@ Inference-first default:
 - `/agent` does not support text subcommands like `list|switch|inspect|stop|close`.
 - `/collab` changes collaboration mode only; feature enablement is handled by `/experimental` or `config.toml`.
 - `/fast` persists service tier selection (`on` => `fast`, `off` => unset) and requires `features.fast_mode = true`.
+- `/model`, `/status`, `/diff`, `/init`, `/mcp`, `/personality`, and `/new` are native operator controls and should be preferred over custom prompt wrappers when they directly fit the need.
 - `/apps` requires `features.apps = true` to appear and function.
 - `/review` and `/plan` support inline arguments; `/agent` and `/collab` do not.
+- `/experimental` is the correct native toggle surface for upstream experimental flags; use persistent config changes only after a feature is intentionally adopted into the home workflow defaults.
 - `/prompts:*` is the right compatibility layer for Claude/Claudify-style reusable commands.
 - Use `bug-scanner-autopilot-codex` for UBS scanner orchestration (`review-only` default, `mode=apply` for fixes).
 
@@ -136,10 +144,6 @@ Inference-first default:
 1. main thread only
 2. short structured questions
 3. only when the answer materially changes the workflow
-- When the blocker is access rather than direction, prefer native `request_permissions` with the smallest named profile that unblocks the next step.
-- Keep these surfaces separate:
-1. `request_user_input` for human workflow decisions
-2. `request_permissions` for structured filesystem/network escalation
 - For continuity, prefer native thread lifecycle:
 1. continue same thread when coherent
 2. resume before recreating

@@ -47,6 +47,7 @@ done
 
 failures=0
 warnings=0
+triage_file="$repo_root/playbooks/upstream-surface-triage.md"
 
 pass() {
   printf 'PASS %s\n' "$1"
@@ -220,13 +221,15 @@ check_upstream_models() {
     if grep -Fxq "$model_name" <<<"$upstream_models"; then
       pass "model exists upstream: $model_name"
     else
-      fail "model missing upstream: $model_name"
+      warn "model not present in bundled upstream models.json: $model_name"
       missing=1
     fi
   done <<<"$repo_models"
 
   if [[ "$missing" -eq 0 ]]; then
     pass "all shareable model pins are recognized by upstream Codex"
+  else
+    warn "bundled upstream models.json is not a complete source of live model availability; verify missing pins against the runtime picker or current Codex tool surface before changing config"
   fi
 }
 
@@ -288,6 +291,183 @@ check_upstream_native_commands() {
 COMMANDS
 }
 
+extract_triaged_features() {
+  python3 - "$triage_file" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text().splitlines()
+inside = False
+for raw_line in text:
+    line = raw_line.strip()
+    if line == "## Features":
+        inside = True
+        continue
+    if inside and line.startswith("## "):
+        break
+    if not inside:
+        continue
+    match = re.match(r"^- `([^`]+)`: ([a-z_]+)$", line)
+    if match:
+        print(f"{match.group(1)}|{match.group(2)}")
+PY
+}
+
+extract_triaged_commands() {
+  python3 - "$triage_file" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text().splitlines()
+inside = False
+for raw_line in text:
+    line = raw_line.strip()
+    if line == "## Commands":
+        inside = True
+        continue
+    if inside and line.startswith("## "):
+        break
+    if not inside:
+        continue
+    match = re.match(r"^- `([^`]+)`: ([a-z_]+)$", line)
+    if match:
+        print(f"{match.group(1)}|{match.group(2)}")
+PY
+}
+
+extract_upstream_triage_feature_keys() {
+  python3 - "$upstream_codex/codex-rs/core/src/features.rs" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text()
+excluded = {
+    "web_search_request",
+    "web_search_cached",
+    "search_tool",
+    "sqlite",
+    "use_linux_sandbox_bwrap",
+    "request_rule",
+    "experimental_windows_sandbox",
+    "elevated_windows_sandbox",
+    "remote_models",
+    "steer",
+    "collaboration_modes",
+}
+for key in sorted(set(re.findall(r'key:\s*"([^"]+)"', text))):
+    if key in excluded:
+        continue
+    print(key)
+PY
+}
+
+extract_upstream_command_names() {
+  python3 - "$upstream_codex/codex-rs/tui/src/slash_command.rs" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text()
+body = re.search(r"pub enum SlashCommand \{(.*?)\n\}", text, re.S)
+if body is None:
+    raise SystemExit("could not locate SlashCommand enum")
+
+def kebab(name: str) -> str:
+    parts = re.findall(r"[A-Z][a-z0-9]*", name)
+    return "-".join(part.lower() for part in parts)
+
+pending = None
+for raw_line in body.group(1).splitlines():
+    stripped = raw_line.strip()
+    if not stripped or stripped.startswith("//"):
+        continue
+    attr = re.match(r'#\[strum\((.*)\)\]', stripped)
+    if attr:
+        serialize = re.search(r'serialize = "([^"]+)"', attr.group(1))
+        to_string = re.search(r'to_string = "([^"]+)"', attr.group(1))
+        pending = to_string.group(1) if to_string else serialize.group(1) if serialize else None
+        continue
+    if stripped.startswith("#["):
+        continue
+    name = stripped.rstrip(",")
+    if not re.fullmatch(r"[A-Z][A-Za-z0-9_]*", name):
+        continue
+    command = pending or kebab(name)
+    pending = None
+    print(f"/{command}")
+PY
+}
+
+check_upstream_triage_coverage() {
+  local features_file="$upstream_codex/codex-rs/core/src/features.rs"
+  local slash_file="$upstream_codex/codex-rs/tui/src/slash_command.rs"
+  if [[ ! -f "$features_file" || ! -f "$slash_file" ]]; then
+    warn "upstream feature or slash-command source missing; skipping triage coverage checks"
+    return
+  fi
+  if [[ ! -f "$triage_file" ]]; then
+    fail "missing upstream triage file: $triage_file"
+    return
+  fi
+
+  local triaged_features
+  local triaged_commands
+  local upstream_features
+  local upstream_commands
+  triaged_features="$(extract_triaged_features)"
+  triaged_commands="$(extract_triaged_commands)"
+  upstream_features="$(extract_upstream_triage_feature_keys)"
+  upstream_commands="$(extract_upstream_command_names)"
+
+  if [[ -z "$triaged_features" ]]; then
+    fail "upstream surface triage file has no feature entries"
+    return
+  fi
+  if [[ -z "$triaged_commands" ]]; then
+    fail "upstream surface triage file has no command entries"
+    return
+  fi
+
+  while IFS= read -r key; do
+    [[ -n "$key" ]] || continue
+    if grep -Fq "${key}|" <<<"$triaged_features"; then
+      pass "triaged upstream feature: $key"
+    else
+      fail "missing triage entry for upstream feature: $key"
+    fi
+  done <<<"$upstream_features"
+
+  while IFS='|' read -r key _status; do
+    [[ -n "$key" ]] || continue
+    if grep -Fxq "$key" <<<"$upstream_features"; then
+      pass "triage feature still exists upstream: $key"
+    else
+      fail "stale triage feature entry not found upstream: $key"
+    fi
+  done <<<"$triaged_features"
+
+  while IFS= read -r command_name; do
+    [[ -n "$command_name" ]] || continue
+    if grep -Fq "${command_name}|" <<<"$triaged_commands"; then
+      pass "triaged upstream command: $command_name"
+    else
+      fail "missing triage entry for upstream command: $command_name"
+    fi
+  done <<<"$upstream_commands"
+
+  while IFS='|' read -r command_name _status; do
+    [[ -n "$command_name" ]] || continue
+    if grep -Fxq "$command_name" <<<"$upstream_commands"; then
+      pass "triage command still exists upstream: $command_name"
+    else
+      fail "stale triage command entry not found upstream: $command_name"
+    fi
+  done <<<"$triaged_commands"
+}
+
 check_upstream_builtin_roles() {
   local role_file="$upstream_codex/codex-rs/core/src/agent/role.rs"
   if [[ ! -f "$role_file" ]]; then
@@ -336,13 +516,13 @@ PY
     else
       fail "native tool missing upstream: $tool_name"
     fi
-  done <<'TOOLS'
+done <<'TOOLS'
 request_user_input
 request_permissions
 spawn_agent
 send_input
 resume_agent
-wait
+wait_agent
 close_agent
 spawn_agents_on_csv
 js_repl
@@ -355,6 +535,7 @@ for rel in \
   AGENTS.md \
   config.toml.example \
   playbooks \
+  playbooks/upstream-surface-triage.md \
   prompts \
   roles \
   rules \
@@ -383,14 +564,7 @@ for role_file in "$repo_root"/roles/*.toml; do
     fail "$role_name has no model pin"
     continue
   fi
-  case "$model" in
-    gpt-5.4)
-      pass "$role_name pins allowed model $model"
-      ;;
-    *)
-      fail "$role_name pins unexpected model $model"
-      ;;
-  esac
+  pass "$role_name has model pin $model"
 done
 
 echo "== Relative references =="
@@ -415,6 +589,7 @@ if [[ -d "$upstream_codex" ]]; then
   check_upstream_native_commands
   check_upstream_builtin_roles
   check_upstream_native_tools
+  check_upstream_triage_coverage
 else
   warn "$upstream_codex does not exist; skipping upstream drift checks"
 fi

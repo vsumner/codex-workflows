@@ -6,8 +6,16 @@ Use these operator commands directly in chat.
 - `/plan <task>`: native Plan mode switch and optional inline planning request.
 - `/collab`: native collaboration-mode picker.
 - `/agent`: native agent/thread picker.
+- `/model`: inspect or change model and reasoning effort quickly.
 - `/fast [on|off|status]`: toggle Fast mode (requires `features.fast_mode = true`)
+- `/status`: inspect active model, mode, and session/token state.
 - `/review`: native Codex review flow
+- `/diff`: show the current git diff before review or remediation.
+- `/init`: create or refresh an `AGENTS.md` scaffold when bootstrapping repo-local guidance.
+- `/experimental`: toggle upstream experimental features such as `js_repl`, `apps`, or guardian approval.
+- `/mcp`: inspect configured MCP tools when tool availability looks wrong.
+- `/personality`: switch the native communication preset without editing config.
+- `/new`: cut a fresh thread when the current one is too polluted to resume cleanly.
 - `review-workflow` (or `review-workflow-codex`): run the parallel reviewer-agent workflow
 - `/review-spacebot`: run the Spacebot maintainer + Rust review workflow (`review-spacebot-codex`)
 - `/simplify`: run simplify triage/cleanup workflow (`simplify-codex`)
@@ -37,14 +45,23 @@ Use these operator commands directly in chat.
 - `/prompts:workflow-deep-team`: topology wrapper for running RPIV with stronger validation
 - `/prompts:workflow-learning-tests`: research subroutine for learning-test execution (`workflow-learning-tests-codex`)
 - `/prompts:workflow-resume`: template alias for resuming paused team runs
-- `/prompts:workflow-fix-loop`: canonical entrypoint for focused remediation after failed verification (`workflow-fix-loop-codex`)
+- `/prompts:workflow-fix-loop`: template alias for focused remediation after failed verification
 - `/prompts:workflow-authoring`: create or refactor Codex workflow surfaces (`workflow-authoring-codex`)
 - `/prompts:fix-pr-feedback`: template alias for autonomous PR remediation with local verification
 - `/prompts:bug-scanner-autopilot`: template alias for UBS scan + triage + minimal fixes + verification
 
 ## Canonical Surface
 - Native built-ins remain the canonical surface for generic planning, review, agent/thread control, collaboration mode, fast mode, and apps.
-- `/prompts:workflow-rpiv`, `/prompts:workflow-research`, `/prompts:workflow-plan`, `/prompts:workflow-execute`, `/prompts:workflow-verify`, `/prompts:workflow-fix-loop`, and `/prompts:workflow-review` are the canonical public RPIV launch paths.
+- Native built-ins also cover session hygiene and operator controls:
+1. `/model`
+2. `/status`
+3. `/diff`
+4. `/init`
+5. `/experimental`
+6. `/mcp`
+7. `/personality`
+8. `/new`
+- `/prompts:workflow-rpiv`, `/prompts:workflow-research`, `/prompts:workflow-plan`, `/prompts:workflow-execute`, `/prompts:workflow-verify`, and `/prompts:workflow-review` are the canonical public RPIV launch paths.
 - `review-workflow`, `/simplify`, `/verify-gates`, `verification-specialist`, `bug-scanner-autopilot`, and `/review-spacebot` are RPIV-owned subroutines, not alternate top-level workflows.
 - `fix-pr-feedback` is an Execute-owned PR remediation subroutine, not a separate workflow.
 - `workflow-*-codex`, `review-workflow-codex`, and `bug-scanner-autopilot-codex` are backend skill names, not extra public workflows.
@@ -60,13 +77,7 @@ Use these operator commands directly in chat.
 - RPIV should use native `update_plan` automatically for non-trivial runs.
 - `update_plan` should stay short, phase-first, and not mirror `features.json`.
 - RPIV should use native `request_user_input` only for material decision forks.
-- RPIV should use native `request_permissions` plus named permission profiles when the blocker is filesystem or network access.
-- RPIV should prefer native thread compaction at long Execute/Verify/fix-loop boundaries; if unavailable, restart the next phase from artifacts in a fresh thread/context.
 - `request_user_input` should stay main-thread only and should not be used for routine ambiguity.
-- Keep human decisions and capability escalation separate: `request_user_input` for workflow direction, `request_permissions` for structured access expansion.
-- Prefer a relevant plugin-backed skill, MCP server, or app when one already packages the needed capability.
-- `workflow-execute` should not stop with a manual Verify suggestion when it can start Verify safely.
-- `workflow-verify` should auto-enter `workflow-fix-loop` for bounded failures and auto-return to Execute when the verified slice passes and more unblocked work remains.
 - `workflow-learning-tests` is the Research subroutine for proving uncertain behavior.
 - `/simplify` is the optional Execute refinement pass after packet execution stabilizes.
   It stays a skill plus prompt wrapper, not a role or separate RPIV phase.
@@ -105,8 +116,6 @@ Use these operator commands directly in chat.
 - "what phase is this in / what's the workflow status" -> `/prompts:workflow-status`
 - "create a workflow / refactor this workflow / should this be a skill or role" -> `/prompts:workflow-authoring`
 - "run bug scanner autopilot / scan and auto-fix UBS findings" -> `/prompts:bug-scanner-autopilot`
-- "I need more access / let this use the network / allow writes outside the current sandbox" -> native permissions profile + `request_permissions`
-- "use plugin X / try the plugin for this" -> prefer the matching plugin-backed skill, MCP server, or app; use `@plugin` when explicit plugin mention helps
 - "speed this up / fastest mode" -> `/fast on`
 
 ## Behavior
@@ -114,9 +123,10 @@ Use these operator commands directly in chat.
 - `/fast` is a service-tier toggle: `on` sets `service_tier = "fast"` and `off` clears it.
 - Fast mode commands are available only when `features.fast_mode = true`.
 - `/apps` is available only when `features.apps = true`, and connector mentions use `$`.
-- Native plugins are capability bundles; prefer them when they already package the needed skill, MCP server, or app.
-- Keep access expansion separate from workflow branching: use `request_permissions` for structured permission escalation and `request_user_input` for human decisions.
-- When a command needs interactive shell behavior or streaming output semantics, prefer PTY/TTY-capable exec paths.
+- `/experimental` is the native place to toggle upstream experimental features for current and future sessions; use `config.toml` only when the feature is intentionally part of the long-lived home default.
+- `/model`, `/status`, and `/personality` are the fast native controls for session-shape debugging before falling back to workflow-specific prompts.
+- `/diff` is the shortest native pre-review sanity check and should be preferred over re-explaining the current patch in chat.
+- `/mcp` is the native first stop for missing-tool diagnosis before debugging skill or prompt wiring.
 - `review-workflow` is the canonical review workflow when Victor asks for review in natural language.
 - Use native `/review` when Victor explicitly asks for it or wants the built-in reviewer specifically.
 - Use `review-workflow` when you want parallel reviewer agents, PR-comment dedupe, security/adversarial lanes, or review-to-verify/apply orchestration.
@@ -165,7 +175,6 @@ Use these operator commands directly in chat.
 2. `autonomous` when the next execution step is low-risk and unblocked
 3. `parallel_autonomous` when multiple low-risk independent packets are ready together
 - Low-risk execution ambiguity may continue in `autonomous` modes, but material forks still require `request_user_input`.
-- Phase-boundary continuation is the default: Execute -> Verify -> fix loop / next Execute when artifacts, evidence, and safety gates allow it.
 - `workflow-verify` should infer:
 1. `gates` proof when command-level checks are enough
 2. `behavior` proof when runtime/user-flow evidence matters
@@ -211,7 +220,6 @@ Use these operator commands directly in chat.
 - Critique/fix convergence limit: maximum 2 loops per finding set, then escalate to human decision.
 - `/agent` and `/collab` are picker commands, not text-subcommand CLIs.
 - Use native thread lifecycle controls through `/agent` and matching thread semantics, not custom prompt-level restart conventions.
-- Prefer native `/compact` or thread compaction before starting the next phase from a long or noisy transcript; otherwise reopen from the RPIV artifacts in a fresh thread.
 - Use `/prompts:workflow-rpiv`, `/prompts:workflow-research`, `/prompts:workflow-plan`, `/prompts:workflow-execute`, `/prompts:workflow-verify`, and `/prompts:workflow-review` as the canonical personal workflow launch paths.
 - Swarm coordination now lives inside RPIV, primarily in the Execute phase, rather than in separate legacy prompt wrappers.
 - Treat `/simplify`, `/verify-gates`, `verification-specialist`, `review-workflow`, `bug-scanner-autopilot`, and `/review-spacebot` as RPIV subroutines, not alternate top-level workflows.
