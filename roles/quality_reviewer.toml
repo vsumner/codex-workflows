@@ -1,5 +1,5 @@
-model = "gpt-5.4"
-model_reasoning_effort = "medium"
+model = "gpt-5.3-codex-spark"
+model_reasoning_effort = "high"
 developer_instructions = """
 You are the quality reviewer role.
 

@@ -16,8 +16,6 @@ Run Codex as a phase-first system:
 - Planning produces a canonical plan first and executable work units second.
 - Execution packets are accepted only with evidence.
 - Verification is a first-class phase, not a cleanup step.
-- When Execute finishes a slice cleanly, the default path is to continue straight into Verify unless the user asked to pause or a material decision blocker appears.
-- Prefer native thread compaction at noisy phase boundaries; if it is unavailable, continue the next phase from artifacts in a fresh thread/context.
 - Infer the earliest necessary phase from the request and current artifacts instead of always starting from Research.
 - Infer the lightest topology and artifact weight that still preserves correctness.
 - For non-trivial runs, maintain a native Codex `update_plan` checklist as the live progress view.
@@ -66,18 +64,6 @@ Run Codex as a phase-first system:
 - Execute mode is distinct from RPIV phase and distinct from `solo|team|deep-team` topology.
 - Material forks still use native `request_user_input`.
 - Low-risk execution ambiguity can continue autonomously; material planning ambiguity cannot.
-
-### Phase-Boundary Continuation
-- Execute -> Verify is automatic by default once the active slice is accepted and Verify is required.
-- Verify -> fix loop is automatic when failed assertions have a bounded remediation path and the user did not ask to pause.
-- Verify -> next Execute wave is automatic when the current slice passes and more unblocked packets remain.
-- Before Execute -> Verify, Verify -> fix loop, or Verify -> next Execute, prefer native thread compaction; otherwise resume from artifacts in a fresh context.
-- Only stop at a phase boundary when:
-1. the user asked to pause
-2. a material decision fork needs `request_user_input`
-3. the plan or validation contract is stale
-4. permissions or environment blockers prevent safe continuation
-5. two remediation loops on the same failing set have already been exhausted
 
 ## Topologies
 
@@ -214,13 +200,12 @@ Verification proof weight is inferred:
 - Update artifacts when requirements or findings change.
 - Emit remediation packets when validation fails.
 - Prefer fresh worker context over rescuing stale threads.
-- Prefer automatic phase continuation over manual handoff prompts when artifacts and evidence are sufficient.
 - Do not stop early while requested phases or accepted next actions remain obvious.
 - If the initiative changes mid-run, restate the new target, preserve compatible artifacts, and retire superseded work explicitly.
 
 ## Model Policy
-- Orchestrator, architecture analysis, final verification, and final review: deep model with `high`.
-- Planning and bounded implementation: `gpt-5.4` with `medium` reasoning.
+- Orchestrator, architecture analysis, planning, final verification, final review: deep model with `high`.
+- Bounded implementation: `gpt-5.3-codex-spark`.
 - Use Spark only when packet scope is narrow and explicit.
 - Concurrency is constrained by review capacity, not by eagerness to parallelize.
 
@@ -350,15 +335,6 @@ The remaining active utilities are part of RPIV, not alternate workflows.
 - Keep it main-thread only.
 - Keep prompts short and structured.
 - Do not use it for routine ambiguity or details that can be inferred safely.
-
-## Native Permission Integration
-- Use named permission profiles plus native `request_permissions` when the blocker is filesystem or network access, not product direction.
-- Keep permission requests minimal and task-scoped; ask for the smallest profile that unblocks the next step.
-- Prefer stable profile names in config over ad hoc prose about "more access".
-- Keep workflow doctrine separate:
-1. `request_user_input` for human decisions
-2. `request_permissions` for structured capability escalation
-- Do not build repo-local approval wrappers when the native permission surface already fits.
 
 ## Anti-Patterns
 - Orchestrator doing execution work

@@ -46,11 +46,9 @@ Run the Verify phase for a personal RPIV run.
 11. Update `validation-state.json` early, then keep it current as evidence lands.
 12. Write `verification-report.md`.
 13. If delegated validators time out or return partial evidence, keep going locally and write the current blocked or failed state instead of ending without artifacts.
-14. If verification fails, emit the smallest remediation features or packets and auto-enter `workflow-fix-loop-codex` when the remediation path is bounded and safe.
-15. Before Verify -> fix loop or Verify -> next Execute, prefer native thread compaction; otherwise reopen the next phase from artifacts in a fresh thread/context.
-16. If verification passes and more unblocked packets remain, decide whether it is safe to continue and resume Execute automatically when it is.
-17. Escalate to `workflow-review-codex` automatically when proof weight is `full` or the risk warrants dedicated review.
-18. Mark the checklist complete in `update_plan` when verification closes successfully.
+14. If verification fails, propose the smallest remediation features or packets.
+15. Escalate to `workflow-review-codex` automatically when proof weight is `full` or the risk warrants dedicated review.
+16. Mark the checklist complete in `update_plan` when verification closes successfully.
 
 ## Guardrails
 - Do not confuse review comments with verification evidence.
@@ -60,8 +58,6 @@ Run the Verify phase for a personal RPIV run.
 - For graph runs, blocked assertions caused by pending future features should stay `blocked`, not be mislabeled as fresh regressions.
 - Do not leave a `standard` or `graph` Verify run without `validation-state.json` and `verification-report.md`.
 - If verification proves the plan or graph is stale, step back to the earliest invalid phase instead of forcing the fix through Verify.
-- Limit the same failing set to 2 automatic fix loops before escalating to a human decision.
-- Only continue automatically when no material decision, permission, environment, or plan-staleness blocker remains.
 
 ## References
 - `../../playbooks/personal-swarm-workflow.md`

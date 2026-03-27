@@ -49,13 +49,5 @@ Never treat implementation as done until there is some concrete proof it works: 
 ## Publish Actions
 Do not commit, push, open a PR, or post review comments unless Victor explicitly asks. Before any publish action, be clear about branch state, verification status, and notable residual risk. When writing human-facing PR or review comments, be concise, direct, actionable, and assume positive intent. If Victor appears to be heading toward a PR, prepare the needed context proactively, but stop short of publishing until asked.
 
-## Delivery Gates (Mandatory)
-For this repo's tracked workflow surface (`AGENTS.md`, `config.toml.example`, `playbooks/`, `prompts/`, `roles/`, `rules/`, `skills/`, `scripts/`, and `Justfile`):
-
-- Run `just preflight` before declaring the repo ready for handoff. If `just` is unavailable, run `./scripts/check-shareable.sh` directly.
-- Run `just gate-shareable` before declaring non-trivial workflow or config changes complete. If `just` is unavailable, run `./scripts/check-shareable.sh`, install into a temp Codex home, and rerun the checker against that temp tree.
-- If a gate fails twice, stop retrying blindly. Fix the root cause or narrow the claimed scope.
-- Do not claim live `~/.codex` behavior matches this repo unless `just preflight` passes against the live home or you explicitly say it was not checked.
-
 ## Keep This File Small
 Put repo-specific rules in repo-local `AGENTS.md`. Put detailed workflow mechanics, schemas, and playbook logic in skills or playbooks. Keep this file stable, personal, and short.

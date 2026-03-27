@@ -27,11 +27,8 @@ Before creating or extending a workflow surface, ask:
 Prefer adopting these native surfaces directly when they fit:
 - `update_plan` for the live checklist
 - `request_user_input` for short structured decisions
-- `request_permissions` plus named permission profiles for structured filesystem/network escalation
-- native thread compaction or fresh-thread resume for phase-boundary context cleanup
 - native collab tools for multi-agent coordination
 - native thread resume/fork/archive semantics for workflow continuity
-- native plugins and `@plugin` mentions for packaged skills, MCP servers, and apps
 - native `/apps` and `$` connectors for external systems
 
 Do not create a custom workflow surface just to restate a native capability.
@@ -44,12 +41,6 @@ Create one only when you need:
 Explicit exception:
 - `/plan` and `/review` are not automatic native-first cases in Victor's stack.
 - If the workflow surface carries the canonical planning or review doctrine, keep that workflow surface authoritative instead of routing back to the native slash command.
-
-Native-surface notes:
-- If the job is "ask the user for product or workflow direction", reach for `request_user_input`.
-- If the job is "obtain more filesystem or network access", prefer named permission profiles plus `request_permissions` over inventing a workflow-specific approval wrapper.
-- If the job is "cross a long or noisy phase boundary", prefer native thread compaction when available; otherwise start the next phase from artifacts in a fresh thread/context.
-- If a relevant plugin already bundles the needed skill, MCP server, or app, prefer using that plugin-backed capability over creating a parallel home-level workflow surface.
 
 ## GPT-5.4 Prompt Contract Doctrine
 

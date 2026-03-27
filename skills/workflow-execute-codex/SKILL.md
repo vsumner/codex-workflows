@@ -31,7 +31,6 @@ Use the smallest team that fits:
 - `spark_implementer_xhigh` is reserved for hard or failure-prone packets.
 - `integrator` is only needed when outputs must merge cleanly.
 - Stay solo when coordination cost is obviously higher than the benefit.
-- If a delegated executor or verifier fails to launch because of role, model, or config issues, do not keep retrying the same broken lane. Either fix the lane or downgrade topology explicitly and continue with one bounded packet.
 
 ## Required Inputs
 Read:
@@ -51,12 +50,9 @@ Read:
 - Update `features.json` and `execution-summary.md` continuously.
 - In graph runs, `features[].status = done` means execution-complete and ready for Verify for that packet, not globally verified.
 - Do not stop after the first accepted packet if more unblocked packets remain.
-- If execution falls back from team mode to solo because delegation is unavailable, state that topology change explicitly in chat and in `execution-summary.md`.
 - Low-risk execution ambiguity may continue in `autonomous` modes, but material forks still require `request_user_input`.
 - If reality invalidates the plan materially, stop and return to planning.
-- When the active slice is accepted and Verify is required, do not stop with a manual Verify recommendation; transition into Verify automatically unless the user asked to pause.
-- Before the Execute -> Verify transition, prefer native thread compaction; if unavailable or inappropriate, start Verify from artifacts in a fresh thread/context.
-- Mark Execute complete in `update_plan` before handing off or continuing into Verify.
+- Mark Execute complete in `update_plan` before handing off to Verify.
 
 ## References
 - `../../playbooks/personal-swarm-workflow.md`
