@@ -19,12 +19,13 @@ Execution contract:
 - Escalate from `explorer` back to full Research only when planner-ready artifacts, cross-cutting architecture analysis, or external/runtime evidence are required.
 - Record the chosen depth in `research.md` and `research.json`.
 - Use `workflow-research` as the canonical research entrypoint. Do not pivot to archived generic research flows unless the user explicitly asks for them.
-- Use a research team when the task is medium or larger:
+- If the user explicitly asked for delegation or selected `mode=team|deep-team`, use a research team:
 1. `workflow_orchestrator`
 2. `research_locator`
 3. `architecture_analyst`
 4. `researcher` and/or `learning_tester` when needed
-- Start with the smallest useful team. Default to 1-2 delegated research workers and only expand when the scope truly splits.
+- Otherwise keep research local, note the recommended topology in the artifacts, and only delegate if a later explicit instruction asks for it.
+- When delegation is active, start with the smallest useful team. Default to 1-2 delegated research workers and only expand when the scope truly splits.
 - Keep all research read-only.
 - Use absolute file paths in artifact references and worker summaries.
 - Write `research.md` and `research.json` under `.codex-workflow/{slug}/`.

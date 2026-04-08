@@ -14,6 +14,7 @@ Use these operator commands directly in chat.
 - `/init`: create or refresh an `AGENTS.md` scaffold when bootstrapping repo-local guidance.
 - `/experimental`: toggle upstream experimental features such as `js_repl`, `apps`, or guardian approval.
 - `/mcp`: inspect configured MCP tools when tool availability looks wrong.
+- `/plugins`: inspect plugin marketplaces and installed plugins.
 - `/personality`: switch the native communication preset without editing config.
 - `/new`: cut a fresh thread when the current one is too polluted to resume cleanly.
 - `review-workflow` (or `review-workflow-codex`): run the parallel reviewer-agent workflow
@@ -39,19 +40,14 @@ Use these operator commands directly in chat.
 - `/prompts:workflow-execute`: canonical entrypoint for the Execute phase team (`workflow-execute-codex`)
 - `/prompts:workflow-verify`: canonical entrypoint for the Verify phase team (`workflow-verify-codex`)
 - `/prompts:workflow-review`: canonical entrypoint for a dedicated review team (`workflow-review-codex`)
-- `/prompts:workflow-status`: summarize RPIV artifact and phase state
-- `/prompts:workflow-solo`: topology wrapper for running RPIV in a single thread
-- `/prompts:workflow-team`: topology wrapper for running RPIV with teams
-- `/prompts:workflow-deep-team`: topology wrapper for running RPIV with stronger validation
 - `/prompts:workflow-learning-tests`: research subroutine for learning-test execution (`workflow-learning-tests-codex`)
-- `/prompts:workflow-resume`: template alias for resuming paused team runs
 - `/prompts:workflow-fix-loop`: template alias for focused remediation after failed verification
 - `/prompts:workflow-authoring`: create or refactor Codex workflow surfaces (`workflow-authoring-codex`)
 - `/prompts:fix-pr-feedback`: template alias for autonomous PR remediation with local verification
 - `/prompts:bug-scanner-autopilot`: template alias for UBS scan + triage + minimal fixes + verification
 
 ## Canonical Surface
-- Native built-ins remain the canonical surface for generic planning, review, agent/thread control, collaboration mode, fast mode, and apps.
+- Native built-ins remain the canonical surface for generic planning, review, codebase explanation, bug fixing, testing, UI iteration, thread control, collaboration mode, fast mode, apps, and plugins.
 - Native built-ins also cover session hygiene and operator controls:
 1. `/model`
 2. `/status`
@@ -61,9 +57,12 @@ Use these operator commands directly in chat.
 6. `/mcp`
 7. `/personality`
 8. `/new`
+- Upstream workflow docs now own the generic "how to use Codex" stories; this repo should only wrap the cases where Victor's RPIV/review doctrine materially changes behavior.
 - `/prompts:workflow-rpiv`, `/prompts:workflow-research`, `/prompts:workflow-plan`, `/prompts:workflow-execute`, `/prompts:workflow-verify`, and `/prompts:workflow-review` are the canonical public RPIV launch paths.
 - `review-workflow`, `/simplify`, `/verify-gates`, `verification-specialist`, `bug-scanner-autopilot`, and `/review-spacebot` are RPIV-owned subroutines, not alternate top-level workflows.
 - `fix-pr-feedback` is an Execute-owned PR remediation subroutine, not a separate workflow.
+- RPIV topology is inferred or passed as an argument to `/prompts:workflow-rpiv`; do not keep separate `solo|team|deep-team` prompt wrappers.
+- Inferred topology does not itself authorize subagent spawning; actual delegation requires explicit user intent for delegation, parallel work, or a non-solo RPIV mode.
 - `workflow-*-codex`, `review-workflow-codex`, and `bug-scanner-autopilot-codex` are backend skill names, not extra public workflows.
 - `/prompts:*` wrappers listed here are the public compatibility layer; do not treat the matching skill file as a second user-facing surface.
 
@@ -104,16 +103,16 @@ Use these operator commands directly in chat.
 - "execute this plan / run the execute phase" -> `/prompts:workflow-execute`
 - "verify this / run the validation team" -> `/prompts:workflow-verify`
 - "review this after verify / run the review team" -> `/prompts:workflow-review`
-- "use a team / split this into subagents / orchestrate workers" -> `/prompts:workflow-team`
-- "keep this solo / do this yourself / no swarm for this one" -> `/prompts:workflow-solo`
-- "this is risky / do the deep version / use the full team" -> `/prompts:workflow-deep-team`
+- "use a team / split this into subagents / orchestrate workers" -> `/prompts:workflow-rpiv` with `mode=team`
+- "keep this solo / do this yourself / no swarm for this one" -> `/prompts:workflow-rpiv` with `mode=solo`
+- "this is risky / do the deep version / use the full team" -> `/prompts:workflow-rpiv` with `mode=deep-team`
 - "prove this assumption first / learn before building / test the tool behavior" -> `/prompts:workflow-learning-tests`
-- "resume the team / pick up the paused swarm" -> `/prompts:workflow-resume`
+- "resume the team / pick up the paused swarm" -> native `/agent` resume plus `/prompts:workflow-rpiv` when phase-aware continuation is still needed
 - "fork this approach / branch this workflow" -> native thread fork semantics via `/agent` plus RPIV artifacts
 - "archive this run / close this old thread" -> native thread archive/close semantics via `/agent`
 - "fix the failed verifier/reviewer findings" -> `/prompts:workflow-fix-loop`
 - "fix this PR" / "address review findings on this PR" / "take this PR to green locally" -> `/prompts:fix-pr-feedback`
-- "what phase is this in / what's the workflow status" -> `/prompts:workflow-status`
+- "what phase is this in / what's the workflow status" -> native `/status` for session state plus RPIV artifact inspection
 - "create a workflow / refactor this workflow / should this be a skill or role" -> `/prompts:workflow-authoring`
 - "run bug scanner autopilot / scan and auto-fix UBS findings" -> `/prompts:bug-scanner-autopilot`
 - "speed this up / fastest mode" -> `/fast on`
@@ -123,6 +122,7 @@ Use these operator commands directly in chat.
 - `/fast` is a service-tier toggle: `on` sets `service_tier = "fast"` and `off` clears it.
 - Fast mode commands are available only when `features.fast_mode = true`.
 - `/apps` is available only when `features.apps = true`, and connector mentions use `$`.
+- `/plugins` is the native marketplace/install surface for portable plugin bundles such as this repo's local export.
 - `/experimental` is the native place to toggle upstream experimental features for current and future sessions; use `config.toml` only when the feature is intentionally part of the long-lived home default.
 - `/model`, `/status`, and `/personality` are the fast native controls for session-shape debugging before falling back to workflow-specific prompts.
 - `/diff` is the shortest native pre-review sanity check and should be preferred over re-explaining the current patch in chat.
@@ -145,6 +145,7 @@ Use these operator commands directly in chat.
 2. research present, plan missing/stale -> Plan
 3. plan present, changes requested -> Execute
 4. execution evidence present, proof requested -> Verify
+- `workflow-rpiv` should carry topology as inference or explicit argument rather than through separate topology wrappers.
 - `workflow-rpiv` should maintain a native `update_plan` checklist:
 1. create it for non-trivial runs
 2. update it on phase transitions

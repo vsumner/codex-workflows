@@ -4,7 +4,9 @@ Codex Workflows is a shareable mirror of the safe parts of `~/.codex`.
 
 Tracked here:
 - `AGENTS.md`
+- `.agents/`
 - `config.toml.example`
+- `plugin/`
 - `playbooks/`
 - `prompts/`
 - `roles/`
@@ -16,6 +18,56 @@ Not tracked here:
 - local history, sessions, logs, caches, sqlite state, or backups
 - per-project trust entries from `config.toml`
 - built-in `skills/.system/`
+
+## Plugin Export
+
+This repo now includes a narrow plugin export layer for portable workflow utilities.
+
+- Source of truth stays in the top-level `skills/` tree.
+- `plugin/` is generated from a curated portable subset and is intentionally not the authoring surface.
+- `.agents/plugins/marketplace.json` points at the local `./plugin` bundle so upstream Codex can discover it as a repo marketplace entry.
+
+Rebuild the plugin bundle with:
+
+```bash
+./scripts/build-plugin.sh
+```
+
+or:
+
+```bash
+just build-plugin
+```
+
+The first export intentionally stays narrow and avoids skills that depend on Victor-specific
+custom agent roles from `config.toml.example`.
+
+## Native Vs Custom
+
+Upstream Codex now covers a lot of generic workflow guidance and operator UX directly.
+This repo should stay focused on the cases where Victor's stack adds real leverage instead of
+restating baseline Codex usage.
+
+Prefer native Codex for:
+
+| Use Case | Native Surface |
+|----------|----------------|
+| explain a codebase, fix a bug, write a test, prototype from a screenshot, update docs | normal prompting plus the upstream workflow docs |
+| local review of current changes | `/review` |
+| GitHub / plugin / connector management | `/apps`, `/plugins`, and native integrations |
+| thread/session controls | `/agent`, `/status`, `/model`, `/new`, `/diff`, `/personality` |
+
+Prefer `codex-workflows` for:
+
+| Use Case | Custom Surface |
+|----------|----------------|
+| non-trivial Research -> Plan -> Execute -> Verify runs | `/prompts:workflow-rpiv` |
+| dedicated phase-owned RPIV work | `/prompts:workflow-research`, `/prompts:workflow-plan`, `/prompts:workflow-execute`, `/prompts:workflow-verify`, `/prompts:workflow-review` |
+| stricter verification and remediation | `/prompts:fix-pr-feedback`, `/prompts:bug-scanner-autopilot`, `/prompts:workflow-fix-loop`, `/prompts:verify-gates` |
+| workflow-surface design and cleanup | `/prompts:workflow-authoring` |
+
+This repo intentionally does not keep separate wrappers for `solo`, `team`, `deep-team`,
+`status`, or `resume`. Those are now handled by RPIV mode arguments plus native Codex thread/session controls.
 
 ## Sync From `~/.codex`
 

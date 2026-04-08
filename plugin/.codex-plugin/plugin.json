@@ -1,0 +1,23 @@
+{
+  "name": "codex-workflows-lite",
+  "description": "Portable workflow utilities from Victor's Codex workflow stack.",
+  "skills": "./skills",
+  "interface": {
+    "displayName": "Codex Workflows Lite",
+    "shortDescription": "Portable workflow utilities for Codex",
+    "longDescription": "A narrow plugin export of portable workflow utilities from Victor's Codex workflow stack. This package intentionally excludes RPIV orchestration skills that depend on custom agent-role config.",
+    "developerName": "Victor Sumner",
+    "category": "developer-tools",
+    "capabilities": [
+      "workflow",
+      "verification",
+      "cli"
+    ],
+    "defaultPrompt": [
+      "Audit this CLI flow and propose concrete DX improvements.",
+      "Run verification gates for this change and report evidence.",
+      "Refactor this workflow surface to be smaller and more coherent."
+    ],
+    "brandColor": "#1f6feb"
+  }
+}

@@ -4,6 +4,7 @@ Run multi-agent execution with explicit task state, bounded conflict risk, and m
 This playbook now applies primarily to the Execute phase of the broader RPIV workflow.
 
 ## When To Use
+- Only when the user explicitly asks for delegation, parallel work, a swarm, or an existing RPIV run is already in explicitly delegated `team|deep-team` mode.
 - Complex plans with independent tracks that can run in parallel.
 - Work that benefits from orchestrator + worker separation.
 - Cases where single-thread execution is too slow.
@@ -81,19 +82,22 @@ Use these as optional tactics, not defaults:
 
 ## Worker Packet Contract
 Every worker packet must include:
-1. Plan path
+1. Plan path plus the relevant goal/overview for the current wave
 2. `task_id`
 3. `task_name`
 4. `problem_statement`
-5. Dependencies and related tasks
+5. Completed dependencies, required prerequisites, and adjacent related tasks
 6. Exact file scope / owned files
 7. Relevant context and handoff inputs
 8. Acceptance criteria
 9. Invariants
 10. Out-of-scope list
 11. Verification plan / validation commands
-12. Intent packet (`goal`, `constraints`, `non_goals`, `acceptance_criteria`)
-13. Explicit "do not modify files outside scope" constraint
+12. Risks, gotchas, and things to avoid
+13. Intent packet (`goal`, `constraints`, `non_goals`, `acceptance_criteria`)
+14. Explicit "do not modify files outside scope" constraint
+
+Worker packets should be thorough enough that the assignee does not need to rediscover the task shape from scratch.
 
 ## Worker Handoff Contract
 Every worker handoff must include:
@@ -114,7 +118,7 @@ Every worker handoff must include:
 - `waves`: all unblocked tasks, ordered by dependency satisfaction and then lowest task ID first
 - `super`: bounded independent subsets
 3. Dispatch workers with complete packets.
-4. Wait for completion and collect evidence.
+4. Wait for the current blocking wave and collect evidence. Do not stall the main thread on unrelated sidecar work.
 5. Integrate in dependency order.
 6. Run targeted validation.
 7. Update task states and repeat until done or blocked.

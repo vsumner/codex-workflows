@@ -70,7 +70,7 @@ Reasoning guidance:
 1. `quality_reviewer` on `gpt-5.3-codex-spark` for fast triage.
 2. Escalate to `reviewer` / `spec_reviewer` on `gpt-5.3-codex` when findings are ambiguous or high-risk.
 - Use Spark workers only for clearly bounded tasks with explicit acceptance criteria and file scope.
-- Default medium and larger work to RPIV with phase teams instead of one long execution thread.
+- Default medium and larger work to RPIV with phase-owned workflow structure instead of one long execution thread; delegate phase teams only when explicitly activated.
 
 ## Escalation Rules
 - Escalate fast-tier tasks to `gpt-5.3-codex` if:

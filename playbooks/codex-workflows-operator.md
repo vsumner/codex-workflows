@@ -36,6 +36,7 @@ Inference-first default:
 - `/statusline`: configure what the native footer exposes.
 - `/mcp`: inspect configured MCP tools and connectivity.
 - `/apps`: manage available/connected apps and connectors.
+- `/plugins`: inspect plugin marketplaces and installed plugins.
 - `/personality`: change the native communication preset.
 - `/collab`: open collaboration mode picker (mode selection, not agent spawning).
 - `/experimental`: toggle experimental features (including multi-agent).
@@ -47,12 +48,9 @@ Inference-first default:
 4. `/prompts:workflow-execute` (bounded executor team)
 5. `/prompts:workflow-verify` (validation team)
 6. `/prompts:workflow-review` (dedicated review team)
-7. `/prompts:workflow-solo` (RPIV in a single thread)
-8. `/prompts:workflow-team` (RPIV with teams)
-9. `/prompts:workflow-deep-team` (RPIV with stronger validation)
-10. `/prompts:workflow-learning-tests` (assumption-proof subroutine)
-11. `/prompts:workflow-authoring` (workflow surface creation/refactoring)
-12. `/prompts:bug-scanner-autopilot` (UBS scanner-to-verification autopilot)
+7. `/prompts:workflow-learning-tests` (assumption-proof subroutine)
+8. `/prompts:workflow-authoring` (workflow surface creation/refactoring)
+9. `/prompts:bug-scanner-autopilot` (UBS scanner-to-verification autopilot)
 
 ## Verified Semantics
 - `/agent` does not support text subcommands like `list|switch|inspect|stop|close`.
@@ -60,9 +58,10 @@ Inference-first default:
 - `/fast` persists service tier selection (`on` => `fast`, `off` => unset) and requires `features.fast_mode = true`.
 - `/model`, `/status`, `/diff`, `/init`, `/mcp`, `/personality`, and `/new` are native operator controls and should be preferred over custom prompt wrappers when they directly fit the need.
 - `/apps` requires `features.apps = true` to appear and function.
+- `/plugins` is the native surface for plugin marketplace/install state, including this repo's local plugin export.
 - `/review` and `/plan` support inline arguments; `/agent` and `/collab` do not.
 - `/experimental` is the correct native toggle surface for upstream experimental flags; use persistent config changes only after a feature is intentionally adopted into the home workflow defaults.
-- `/prompts:*` is the right compatibility layer for Claude/Claudify-style reusable commands.
+- `/prompts:*` should only exist where Victor's workflow materially adds doctrine or stronger completion behavior beyond the native surface.
 - Use `bug-scanner-autopilot-codex` for UBS scanner orchestration (`review-only` default, `mode=apply` for fixes).
 
 ## Review Adaptation Rules
@@ -116,7 +115,7 @@ Inference-first default:
 8. execution intent -> `/prompts:workflow-execute`
 9. validation intent -> `/prompts:workflow-verify`
 10. dedicated review intent -> `/prompts:workflow-review`
-11. risky implementation topology -> `/prompts:workflow-deep-team`
+11. risky implementation topology -> `/prompts:workflow-rpiv` with `mode=deep-team`
 12. assumption-proof intent -> `/prompts:workflow-learning-tests`
 13. workflow surface authoring intent -> `/prompts:workflow-authoring`
 14. scanner autopilot intent -> `/prompts:bug-scanner-autopilot`
@@ -135,6 +134,8 @@ Inference-first default:
 4. `solo|team|deep-team` execution topology from packet independence and risk
 5. `approval_gated|autonomous|parallel_autonomous` execute mode from execution risk and autonomy tolerance
 6. `gates|behavior|full` verification proof weight from the type of evidence required
+- Keep topology as RPIV inference or argument rather than separate public topology wrappers.
+- Treat inferred topology as planning guidance; only activate subagents when the user explicitly asks for delegation, parallel work, or non-solo RPIV mode.
 - For non-trivial RPIV runs, maintain a short native `update_plan` checklist:
 1. one current phase step
 2. one next phase step
@@ -156,7 +157,7 @@ Inference-first default:
 - Use `spark_implementer` or `spark_implementer_xhigh` for bounded execution tasks.
 - Use `workflow_orchestrator` as the canonical owner for RPIV phase transitions.
 - Keep orchestrators out of hands-on implementation.
-- Use a research team before planning when uncertainty is material.
+- When uncertainty is material, run the Research phase before planning; delegate a research team only when delegation is explicitly activated.
 - Use a plan reviewer before implementation when work is non-trivial.
 - Use packet verifiers during implementation, not only at the end.
 - Require `workflow_verifier` for non-trivial runs and `workflow_reviewer` for risky or high-stakes runs.

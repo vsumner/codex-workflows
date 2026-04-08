@@ -20,17 +20,18 @@ Execution contract:
 1. `approval_gated` for risky, destructive, expensive, or still-ambiguous execution that should pause for an explicit go/no-go or phase handoff
 2. `autonomous` for low-risk unblocked execution where minor ambiguity can be resolved from context
 3. `parallel_autonomous` when multiple low-risk independent packets are ready and verification capacity can keep up
-- Use an execution team for non-trivial work:
+- If the user explicitly asked for delegation or selected `mode=team|deep-team`, use an execution team:
 1. `workflow_orchestrator`
 2. `spark_implementer`
 3. `spark_implementer_xhigh`
 4. `packet_verifier`
 5. `integrator` when needed
+- Otherwise keep execution local, record the recommended topology, and only delegate if a later explicit instruction asks for it.
 - Team shape rules:
 1. use `spark_implementer` by default for bounded packets
 2. use `spark_implementer_xhigh` only for hard or failure-prone packets
 3. add `integrator` only when packet outputs must merge cleanly
-4. keep work solo when the coordination cost is obviously higher than the benefit
+4. when delegation is active, keep work solo when the coordination cost is obviously higher than the benefit
 - Execute by dependency layers or waves.
 - When multiple packets are ready, prefer dependency order and then lowest task ID first.
 - Keep ownership boundaries explicit.

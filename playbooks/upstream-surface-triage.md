@@ -23,23 +23,18 @@ Status meanings:
 - `code_mode`: watch
 - `code_mode_only`: skip
 - `js_repl_tools_only`: skip
-- `codex_git_commit`: skip
-- `runtime_metrics`: watch
 - `memories`: watch
 - `child_agents_md`: adopted
 - `image_detail_original`: candidate
 - `apply_patch_freeform`: watch
 - `exec_permission_approvals`: candidate
-- `codex_hooks`: watch
 - `request_permissions_tool`: candidate
-- `use_legacy_landlock`: skip
-- `enable_request_compression`: baseline
 - `multi_agent`: adopted
 - `enable_fanout`: watch
 - `apps`: adopted
+- `tool_search`: candidate
 - `tool_suggest`: candidate
-- `plugins`: watch
-- `powershell_utf8`: skip
+- `plugins`: adopted
 - `image_generation`: skip
 - `skill_mcp_dependency_install`: baseline
 - `skill_env_var_dependency_prompt`: candidate
@@ -49,12 +44,9 @@ Status meanings:
 - `personality`: adopted
 - `artifact`: skip
 - `fast_mode`: adopted
-- `voice_transcription`: watch
 - `realtime_conversation`: watch
 - `tui_app_server`: watch
 - `prevent_idle_sleep`: adopted
-- `responses_websockets`: watch
-- `responses_websockets_v2`: watch
 
 ## Commands
 - `/model`: adopted
@@ -80,10 +72,12 @@ Status meanings:
 - `/mention`: baseline
 - `/status`: adopted
 - `/debug-config`: internal
+- `/title`: skip
 - `/statusline`: baseline
 - `/theme`: skip
 - `/mcp`: adopted
 - `/apps`: adopted
+- `/plugins`: adopted
 - `/logout`: skip
 - `/quit`: baseline
 - `/exit`: baseline

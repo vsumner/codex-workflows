@@ -19,13 +19,15 @@ Run the Research phase and emit planner-ready artifacts.
 3. `deep-team` for `deep` research or when learning tests and external context both matter.
 
 ## Team Shape
-Default research team for non-trivial work:
+Delegated research team when activation is explicit:
 1. `workflow_orchestrator`
 2. `research_locator`
 3. `architecture_analyst`
 4. `researcher` and/or `learning_tester`
 
-Start small.
+Without explicit delegation activation, keep Research local and record the recommended topology.
+
+Start small when delegation is active.
 - Default to 1-2 delegated workers.
 - Add more only when the research cleanly splits into independent tracks.
 

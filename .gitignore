@@ -25,3 +25,4 @@ templates/
 tmp/
 vendor_imports/
 version.json
+plugin/skills/

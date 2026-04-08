@@ -23,6 +23,7 @@ Run the Verify phase for a personal RPIV run.
 1. `solo` for most `gates`.
 2. `team` for `behavior`.
 3. `deep-team` for `full`.
+4. If `team` or `deep-team` is inferred without explicit delegation activation, keep Verify local and record the recommendation.
 
 ## Inputs
 - `research.md`

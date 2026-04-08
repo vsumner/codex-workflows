@@ -18,6 +18,8 @@ Run Codex as a phase-first system:
 - Verification is a first-class phase, not a cleanup step.
 - Infer the earliest necessary phase from the request and current artifacts instead of always starting from Research.
 - Infer the lightest topology and artifact weight that still preserves correctness.
+- Treat inferred topology as planning guidance unless delegation is explicitly activated.
+- Activate subagents only when the user explicitly asks for delegation, parallel work, or `team|deep-team`, or when an existing run is already operating in that explicitly delegated mode.
 - For non-trivial runs, maintain a native Codex `update_plan` checklist as the live progress view.
 - Treat `update_plan` as the working checklist and RPIV artifacts as the durable source of truth.
 - Use native `request_user_input` only for material decision forks that cannot be resolved safely from context.
@@ -77,6 +79,7 @@ Use for tiny, tightly coupled, low-ambiguity work.
 ### `team`
 Use for medium work, multi-step work, or anything likely to lose context.
 
+- Without explicit delegation activation, treat this as the recommended operating shape and keep the run local.
 - One orchestrator owns RPIV.
 - Each phase may use a dedicated team.
 - Start with 2-6 workers where independence is real.
@@ -84,6 +87,7 @@ Use for medium work, multi-step work, or anything likely to lose context.
 ### `deep-team`
 Use for risky refactors, public APIs, concurrency, uncertain integrations, or expensive mistakes.
 
+- Without explicit delegation activation, treat this as a recommendation to harden review/verification rather than a license to spawn workers automatically.
 - Same RPIV phases, stronger review and validation gates.
 - Research and planning are heavier.
 - Verification includes separate scrutiny and user-surface validation when applicable.
@@ -97,7 +101,7 @@ Purpose:
 - narrow uncertainty
 - emit planner-ready outputs
 
-Typical team:
+Delegated team when activation is explicit:
 1. `workflow_orchestrator`
 2. `research_locator`
 3. `architecture_analyst`
@@ -135,7 +139,7 @@ Purpose:
 - critique and refine until changes flatten
 - compile plan into executable work units
 
-Typical team:
+Delegated team when activation is explicit:
 1. `workflow_orchestrator`
 2. `planner`
 3. `plan_reviewer`
@@ -155,7 +159,7 @@ Purpose:
 - execute the plan without re-architecting it mid-flight
 - verify each packet before it is accepted
 
-Typical team:
+Delegated team when activation is explicit:
 1. `workflow_orchestrator`
 2. `spark_implementer`
 3. `spark_implementer_xhigh`
@@ -178,7 +182,7 @@ Purpose:
 - prove implementation matches plan and validation contract
 - keep fix loops narrow and resumable
 
-Typical team:
+Delegated team when activation is explicit:
 1. `workflow_verifier`
 2. `scrutiny_validator`
 3. `user_flow_validator`

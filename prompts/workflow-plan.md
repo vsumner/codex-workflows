@@ -24,10 +24,11 @@ Execution contract:
 1. `lightweight`: `plan.md` is required; keep validation strategy inline and skip `features.json` unless decomposition clearly helps
 2. `standard`: write `plan.md` and `validation-contract.md`; create `features.json` when there are 2+ packets or resumeability benefits
 3. `graph`: require `plan.md`, `validation-contract.md`, and `features.json`
-- Use a plan team when the task is non-trivial:
+- If the user explicitly asked for delegation or selected `mode=team|deep-team`, use a plan team:
 1. `workflow_orchestrator`
 2. `planner`
 3. `plan_reviewer`
+- Otherwise keep planning local, record the recommended topology, and only delegate if a later explicit instruction asks for it.
 - Require:
 1. explicit constraints and non-goals
 2. verification strategy in the plan

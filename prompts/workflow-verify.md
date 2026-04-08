@@ -21,11 +21,12 @@ Execution contract:
 1. `solo` for most `gates`
 2. `team` for `behavior`
 3. `deep-team` for `full`
-- Run a verify team for non-trivial work:
+- If the user explicitly asked for delegation or selected `mode=team|deep-team`, run a verify team:
 1. `workflow_verifier`
 2. `scrutiny_validator`
 3. `user_flow_validator`
 4. `workflow_reviewer` when risk warrants it
+- Otherwise keep verification local, record the recommended topology, and only delegate if a later explicit instruction asks for it.
 - Separate:
 1. scrutiny validation
 2. user-surface or behavior validation

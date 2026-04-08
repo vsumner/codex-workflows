@@ -19,14 +19,16 @@ Run the Execute phase from existing artifacts.
 3. `parallel_autonomous` for the same autonomy model when multiple independent packets are ready and verification capacity can keep up.
 
 ### Team Shape
-Default execution team:
+Delegated execution team when activation is explicit:
 1. `workflow_orchestrator`
 2. `spark_implementer`
 3. `spark_implementer_xhigh`
 4. `packet_verifier`
 5. `integrator`
 
-Use the smallest team that fits:
+Without explicit delegation activation, keep Execute local and record the recommended topology.
+
+Use the smallest team that fits when delegation is active:
 - `spark_implementer` is the default bounded executor.
 - `spark_implementer_xhigh` is reserved for hard or failure-prone packets.
 - `integrator` is only needed when outputs must merge cleanly.

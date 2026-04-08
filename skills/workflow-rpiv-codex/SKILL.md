@@ -19,6 +19,8 @@ Run Victor's full personal workflow:
 - Keep one slug-consistent artifact directory under `.codex-workflow/`.
 - Infer the minimal necessary phase span from the request and current artifacts before doing work.
 - Infer topology and artifact weight before defaulting to the heaviest path.
+- Treat inferred topology as advisory until delegation is explicitly activated.
+- Activate delegated workers only when the user explicitly asks for delegation, parallel work, or `team|deep-team`, or when the current run is already in that explicitly delegated mode.
 - Use native thread lifecycle semantics for continuity.
 - For non-trivial work, maintain a native `update_plan` checklist in parallel with repo artifacts.
 - Use `update_plan` for live progress only; use RPIV artifacts for durable state.
@@ -62,6 +64,7 @@ Minimum artifacts for non-trivial work:
 1. `solo` for tiny, tightly coupled, low-risk work.
 2. `team` for medium work, context-loss risk, or work that splits cleanly.
 3. `deep-team` for risky refactors, public APIs, concurrency, or uncertain integrations.
+4. If `team` or `deep-team` is inferred without explicit delegation activation, keep the run local and record the recommendation rather than spawning workers automatically.
 
 ### Execute Mode
 1. `approval_gated` for risky or still-ambiguous execution awaiting an explicit go/no-go or phase handoff.

@@ -48,6 +48,12 @@ done
 failures=0
 warnings=0
 triage_file="$repo_root/playbooks/upstream-surface-triage.md"
+upstream_features_file="$upstream_codex/codex-rs/features/src/lib.rs"
+upstream_models_file="$upstream_codex/codex-rs/models-manager/models.json"
+upstream_slash_file="$upstream_codex/codex-rs/tui/src/slash_command.rs"
+upstream_role_file="$upstream_codex/codex-rs/core/src/agent/role.rs"
+upstream_tools_dir="$upstream_codex/codex-rs/tools/src"
+upstream_tool_registry_file="$upstream_tools_dir/tool_registry_plan.rs"
 
 pass() {
   printf 'PASS %s\n' "$1"
@@ -148,7 +154,7 @@ PY
 }
 
 extract_upstream_feature_keys() {
-  python3 - "$upstream_codex/codex-rs/core/src/features.rs" <<'PY'
+  python3 - "$upstream_features_file" <<'PY'
 import re
 import sys
 from pathlib import Path
@@ -185,7 +191,7 @@ PY
 }
 
 extract_upstream_model_slugs() {
-  python3 - "$upstream_codex/codex-rs/core/models.json" <<'PY'
+  python3 - "$upstream_models_file" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -199,9 +205,8 @@ PY
 
 
 check_upstream_models() {
-  local models_file="$upstream_codex/codex-rs/core/models.json"
-  if [[ ! -f "$models_file" ]]; then
-    warn "$models_file not found; skipping upstream model drift checks"
+  if [[ ! -f "$upstream_models_file" ]]; then
+    warn "$upstream_models_file not found; skipping upstream model drift checks"
     return
   fi
 
@@ -234,9 +239,8 @@ check_upstream_models() {
 }
 
 check_upstream_feature_keys() {
-  local features_file="$upstream_codex/codex-rs/core/src/features.rs"
-  if [[ ! -f "$features_file" ]]; then
-    warn "$features_file not found; skipping upstream feature-key drift checks"
+  if [[ ! -f "$upstream_features_file" ]]; then
+    warn "$upstream_features_file not found; skipping upstream feature-key drift checks"
     return
   fi
 
@@ -267,15 +271,14 @@ check_upstream_feature_keys() {
 }
 
 check_upstream_native_commands() {
-  local slash_file="$upstream_codex/codex-rs/tui/src/slash_command.rs"
-  if [[ ! -f "$slash_file" ]]; then
-    warn "$slash_file not found; skipping upstream native-command drift checks"
+  if [[ ! -f "$upstream_slash_file" ]]; then
+    warn "$upstream_slash_file not found; skipping upstream native-command drift checks"
     return
   fi
 
   while IFS='|' read -r command variant; do
     [[ -n "$command" ]] || continue
-    if grep -Fq "SlashCommand::$variant" "$slash_file"; then
+    if grep -Fq "SlashCommand::$variant" "$upstream_slash_file"; then
       pass "native command exists upstream: $command"
     else
       fail "native command missing upstream: $command"
@@ -338,7 +341,7 @@ PY
 }
 
 extract_upstream_triage_feature_keys() {
-  python3 - "$upstream_codex/codex-rs/core/src/features.rs" <<'PY'
+  python3 - "$upstream_features_file" <<'PY'
 import re
 import sys
 from pathlib import Path
@@ -356,6 +359,17 @@ excluded = {
     "remote_models",
     "steer",
     "collaboration_modes",
+    "debug_hide_spawn_agent_metadata",
+    "multi_agent_v2",
+    "remote_control",
+    "responses_websockets",
+    "responses_websockets_v2",
+    "runtime_metrics",
+    "general_analytics",
+    "codex_hooks",
+    "codex_git_commit",
+    "use_legacy_landlock",
+    "enable_request_compression",
 }
 for key in sorted(set(re.findall(r'key:\s*"([^"]+)"', text))):
     if key in excluded:
@@ -365,7 +379,7 @@ PY
 }
 
 extract_upstream_command_names() {
-  python3 - "$upstream_codex/codex-rs/tui/src/slash_command.rs" <<'PY'
+  python3 - "$upstream_slash_file" <<'PY'
 import re
 import sys
 from pathlib import Path
@@ -402,9 +416,7 @@ PY
 }
 
 check_upstream_triage_coverage() {
-  local features_file="$upstream_codex/codex-rs/core/src/features.rs"
-  local slash_file="$upstream_codex/codex-rs/tui/src/slash_command.rs"
-  if [[ ! -f "$features_file" || ! -f "$slash_file" ]]; then
+  if [[ ! -f "$upstream_features_file" || ! -f "$upstream_slash_file" ]]; then
     warn "upstream feature or slash-command source missing; skipping triage coverage checks"
     return
   fi
@@ -469,15 +481,14 @@ check_upstream_triage_coverage() {
 }
 
 check_upstream_builtin_roles() {
-  local role_file="$upstream_codex/codex-rs/core/src/agent/role.rs"
-  if [[ ! -f "$role_file" ]]; then
-    warn "$role_file not found; skipping upstream built-in role drift checks"
+  if [[ ! -f "$upstream_role_file" ]]; then
+    warn "$upstream_role_file not found; skipping upstream built-in role drift checks"
     return
   fi
 
   while IFS= read -r role_name; do
     [[ -n "$role_name" ]] || continue
-    if python3 - "$role_file" "$role_name" <<'PY'
+    if python3 - "$upstream_role_file" "$role_name" <<'PY'
 import sys
 from pathlib import Path
 text = Path(sys.argv[1]).read_text()
@@ -496,21 +507,14 @@ ROLES
 }
 
 check_upstream_native_tools() {
-  local tool_file="$upstream_codex/codex-rs/core/src/tools/spec.rs"
-  if [[ ! -f "$tool_file" ]]; then
-    warn "$tool_file not found; skipping upstream native-tool drift checks"
+  if [[ ! -f "$upstream_tool_registry_file" ]]; then
+    warn "$upstream_tool_registry_file not found; skipping upstream native-tool drift checks"
     return
   fi
 
   while IFS= read -r tool_name; do
     [[ -n "$tool_name" ]] || continue
-    if python3 - "$tool_file" "$tool_name" <<'PY'
-import sys
-from pathlib import Path
-text = Path(sys.argv[1]).read_text()
-needle = f'"{sys.argv[2]}"'
-sys.exit(0 if needle in text else 1)
-PY
+    if rg -F "\"$tool_name\"" "$upstream_tools_dir" >/dev/null 2>&1
     then
       pass "native tool exists upstream: $tool_name"
     else
@@ -530,10 +534,62 @@ js_repl_reset
 TOOLS
 }
 
+check_prompt_frontmatter() {
+  while IFS= read -r prompt_file; do
+    [[ -n "$prompt_file" ]] || continue
+    if python3 - "$prompt_file" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text()
+match = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+if match is None:
+    raise SystemExit(1)
+if re.search(r'^description:\s+', match.group(1), re.M) is None:
+    raise SystemExit(1)
+PY
+    then
+      pass "prompt frontmatter is valid: ${prompt_file#$repo_root/}"
+    else
+      fail "prompt frontmatter is missing description or YAML block: ${prompt_file#$repo_root/}"
+    fi
+  done < <(find "$repo_root/prompts" -name '*.md' | sort)
+}
+
+check_skill_frontmatter() {
+  while IFS= read -r skill_file; do
+    [[ -n "$skill_file" ]] || continue
+    if python3 - "$skill_file" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text()
+match = re.match(r'^---\n(.*?)\n---\n', text, re.S)
+if match is None:
+    raise SystemExit(1)
+frontmatter = match.group(1)
+for key in ("name", "description"):
+    if re.search(rf'^{key}:\s+', frontmatter, re.M) is None:
+        raise SystemExit(1)
+PY
+    then
+      pass "skill frontmatter is valid: ${skill_file#$repo_root/}"
+    else
+      fail "skill frontmatter is missing name/description or YAML block: ${skill_file#$repo_root/}"
+    fi
+  done < <(find "$repo_root/skills" -name 'SKILL.md' | sort)
+}
+
 echo "== Repo surface =="
 for rel in \
   AGENTS.md \
+  .agents/plugins/marketplace.json \
   config.toml.example \
+  plugin \
+  plugin/.codex-plugin/plugin.json \
+  plugin/README.md \
   playbooks \
   playbooks/upstream-surface-triage.md \
   prompts \
@@ -566,6 +622,12 @@ for role_file in "$repo_root"/roles/*.toml; do
   fi
   pass "$role_name has model pin $model"
 done
+
+echo "== Prompt frontmatter =="
+check_prompt_frontmatter
+
+echo "== Skill frontmatter =="
+check_skill_frontmatter
 
 echo "== Relative references =="
 while IFS= read -r ref_line; do

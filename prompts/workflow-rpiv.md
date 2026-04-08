@@ -36,6 +36,9 @@ Execution contract:
 1. `solo` for tiny, tightly coupled, low-risk work
 2. `team` for medium work, context-loss risk, or cleanly split work
 3. `deep-team` for risky refactors, public APIs, concurrency, or uncertain integrations
+- Topology inference does not itself authorize subagent spawning.
+- Only activate delegated workers when the user explicitly asks for delegation, parallel work, or `team|deep-team`, or when the existing run is already operating in that explicitly delegated mode.
+- If topology is inferred as `team` or `deep-team` without explicit delegation activation, keep the run local, record the recommended topology, and continue.
 - When Execute is in scope, infer Execute-mode state separately from topology:
 1. `approval_gated` for risky or still-ambiguous execution awaiting an explicit go/no-go or phase handoff
 2. `autonomous` for low-risk unblocked execution where minor ambiguity can be resolved from context

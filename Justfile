@@ -13,6 +13,9 @@ gate-shareable:
 	./scripts/install-shareable-to-home.sh "$tmp_dir" >/dev/null; \
 	./scripts/check-shareable.sh --codex-home "$tmp_dir"
 
+build-plugin:
+	./scripts/build-plugin.sh
+
 sync-home:
 	./scripts/sync-shareable-from-home.sh
 

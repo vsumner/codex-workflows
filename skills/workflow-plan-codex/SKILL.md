@@ -19,10 +19,12 @@ Run the Plan phase after Research.
 3. `deep-team` for `graph` planning or when critique and verification strategy are heavy.
 
 ## Team Shape
-Use:
+Use this delegated team only when activation is explicit:
 1. `workflow_orchestrator`
 2. `planner`
 3. `plan_reviewer`
+
+Without explicit delegation activation, keep Plan local and record the recommended topology.
 
 ## Required Outputs
 Write according to the inferred planning weight:
