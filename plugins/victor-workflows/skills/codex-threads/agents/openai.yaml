@@ -1,0 +1,3 @@
+display_name: Codex Threads
+short_description: Search and mine local Codex thread history.
+default_prompt: Search my recent Codex threads for patterns worth turning into skills.

@@ -1,0 +1,23 @@
+{
+  "name": "victor-workflows",
+  "description": "Victor's Codex workflow tools built around agent-friendly CLIs.",
+  "skills": "./skills",
+  "interface": {
+    "displayName": "Victor Workflows",
+    "shortDescription": "Agent-friendly workflow CLIs for Codex",
+    "longDescription": "Small Codex skills that teach agents how to use local CLIs for thread search, workflow orientation, and review loops without dragging raw history into context.",
+    "developerName": "Victor Sumner",
+    "category": "developer-tools",
+    "capabilities": [
+      "workflow",
+      "cli",
+      "history-search"
+    ],
+    "defaultPrompt": [
+      "Search my recent Codex threads for patterns worth turning into skills.",
+      "Find the Codex thread where this workflow went well.",
+      "Summarize recent workflow friction from my Codex history."
+    ],
+    "brandColor": "#1f6feb"
+  }
+}
