@@ -14,14 +14,16 @@
       "history-search",
       "repo-orientation",
       "workflow-learning",
-      "artifact-gating"
+      "artifact-gating",
+      "environment-debugging"
     ],
     "defaultPrompt": [
       "Search my recent Codex threads for patterns worth turning into skills.",
       "Find the Codex thread where this workflow went well.",
       "Summarize recent workflow friction from my Codex history.",
       "What should we do next in this repo?",
-      "Decide whether this workflow idea should be a skill, CLI, memory rule, or nothing."
+      "Decide whether this workflow idea should be a skill, CLI, memory rule, or nothing.",
+      "Debug this local dev environment failure and identify the smallest verified fix."
     ],
     "brandColor": "#1f6feb"
   }

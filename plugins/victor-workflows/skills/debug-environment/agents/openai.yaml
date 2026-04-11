@@ -1,0 +1,3 @@
+display_name: Debug Environment
+short_description: Diagnose local dev, package-manager, workspace, and toolchain failures without blind reruns or broad rollback.
+default_prompt: Debug this local dev environment failure and identify the smallest verified fix.

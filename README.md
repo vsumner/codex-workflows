@@ -23,6 +23,7 @@ Do not add machinery just to aggregate existing primitives. Prefer `git`, `gh`, 
   - `repo-orientation`: answer "what's next?" and branch/PR readiness questions using `git`, `gh`/GitHub, handoff state, and `codex-threads` only when needed.
   - `workflow-learning`: mine recent Codex sessions for repeated friction and recommend the smallest durable artifact.
   - `artifact-gate`: decide whether a proposed workflow artifact should be a skill, CLI, `AGENTS.md` rule, memory extension, handoff, docs, or nothing.
+  - `debug-environment`: diagnose local dev, package-manager, workspace, and toolchain failures without blind reruns or broad rollback.
 - `memories_extensions/victor-workflows`: memory consolidation guidance for retaining durable workflow-tooling lessons.
 
 ## Workflow Thesis
