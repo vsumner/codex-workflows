@@ -1,0 +1,3 @@
+display_name: Repo Orientation
+short_description: Decide the next repo action from git, PR, and handoff state.
+default_prompt: What should we do next in this repo?

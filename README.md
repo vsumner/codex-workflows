@@ -18,8 +18,32 @@ Do not add machinery just to aggregate existing primitives. Prefer `git`, `gh`, 
 ## Current Surface
 
 - `codex-threads`: read-only CLI for searching and summarizing local Codex thread history.
-- `plugins/victor-workflows`: Codex plugin bundle with skills that teach Codex how to use these CLIs.
+- `plugins/victor-workflows`: Codex plugin bundle with fat workflow skills and small deterministic CLI guidance.
+  - `codex-threads`: use the local history CLI instead of reading raw transcripts.
+  - `repo-orientation`: answer "what's next?" and branch/PR readiness questions using `git`, `gh`/GitHub, handoff state, and `codex-threads` only when needed.
+  - `workflow-learning`: mine recent Codex sessions for repeated friction and recommend the smallest durable artifact.
+  - `artifact-gate`: decide whether a proposed workflow artifact should be a skill, CLI, `AGENTS.md` rule, memory extension, handoff, docs, or nothing.
 - `memories_extensions/victor-workflows`: memory consolidation guidance for retaining durable workflow-tooling lessons.
+
+## Workflow Thesis
+
+Codex is the harness. This repo should make Codex easier to steer, not replace its agent loop.
+
+Default loop:
+
+1. Use `repo-orientation` to decide the next action from current repo state.
+2. Use `workflow-learning` to turn repeated session friction into evidence-backed recommendations.
+3. Use `artifact-gate` before adding durable machinery.
+4. Promote only the smallest useful artifact:
+   - skill for repeated judgment, routing, and command order;
+   - CLI for repeated deterministic access to noisy state;
+   - `AGENTS.md` for stable behavior rules;
+   - memory extension for future memory consolidation guidance;
+   - handoff for temporary cross-session state.
+
+## Design Notes
+
+- [`docs/gstack-lessons.md`](docs/gstack-lessons.md): lessons from Garry Tan's gstack and the thin-harness, fat-skills model.
 
 ## Development
 
@@ -29,8 +53,8 @@ cargo test
 cargo run -p codex-threads -- --json doctor
 ```
 
-Install the first CLI locally:
+Install the local CLI, plugin cache copy, and memory extension:
 
 ```bash
-cargo install --path crates/codex-threads
+plugins/victor-workflows/scripts/install.sh
 ```

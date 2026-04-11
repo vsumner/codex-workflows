@@ -1,22 +1,27 @@
 {
   "name": "victor-workflows",
-  "description": "Victor's Codex workflow tools built around agent-friendly CLIs.",
+  "description": "Victor's Codex workflow layer built around fat skills and small deterministic CLIs.",
   "skills": "./skills",
   "interface": {
     "displayName": "Victor Workflows",
-    "shortDescription": "Agent-friendly workflow CLIs for Codex",
-    "longDescription": "Small Codex skills that teach agents how to use local CLIs for thread search, workflow orientation, and review loops without dragging raw history into context.",
+    "shortDescription": "Fat workflow skills and small CLIs for Codex",
+    "longDescription": "Codex skills that package Victor's workflow judgment, plus small deterministic CLIs for noisy local state such as thread history.",
     "developerName": "Victor Sumner",
     "category": "developer-tools",
     "capabilities": [
       "workflow",
       "cli",
-      "history-search"
+      "history-search",
+      "repo-orientation",
+      "workflow-learning",
+      "artifact-gating"
     ],
     "defaultPrompt": [
       "Search my recent Codex threads for patterns worth turning into skills.",
       "Find the Codex thread where this workflow went well.",
-      "Summarize recent workflow friction from my Codex history."
+      "Summarize recent workflow friction from my Codex history.",
+      "What should we do next in this repo?",
+      "Decide whether this workflow idea should be a skill, CLI, memory rule, or nothing."
     ],
     "brandColor": "#1f6feb"
   }
