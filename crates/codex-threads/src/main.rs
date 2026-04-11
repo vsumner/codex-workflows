@@ -548,7 +548,7 @@ fn skill_signal_counts(codex_home: &Path, cutoff: DateTime<Utc>) -> Result<Vec<S
             name: "session-orientation",
             count: 0,
             rationale: "Repeated \"what's next\", branch, status, and PR-link orientation requests.",
-            suggested_surface: "codex-workflow status/next CLI",
+            suggested_surface: "plugin skill over git/gh/codex-threads; CLI only if a missing primitive appears",
         },
         SkillSignal {
             name: "skill-routing",
