@@ -16,6 +16,7 @@ This is a planning and evaluation skill first. Do not edit skills, docs, memory 
 - Use `codex-threads` for bounded history access. Do not read raw `~/.codex` transcripts directly unless the CLI is unavailable.
 - Summarize patterns. Do not paste full transcripts.
 - Distinguish Victor's durable workflow from one-off task noise.
+- Optimize for the ideal end state first, then choose the smallest next artifact that moves toward it. Do not let "smallest artifact" become local minimalism that ignores the target workflow shape.
 
 ## Evidence Pass
 
@@ -52,6 +53,7 @@ Use event reads when the question depends on tool churn, failed commands, or whe
 For each representative run, capture:
 
 - `task`: what Victor wanted.
+- `ideal_end_state`: what smoother future workflow this points toward, if any.
 - `surface`: implementation, review, debugging, frontend, workflow design, orientation, publish, or history mining.
 - `outcome`: pass, partial, fail, or unknown.
 - `interventions`: 0, 1, 2+.
@@ -78,10 +80,13 @@ If a proposed CLI only aggregates `git`, `gh`, Codex apps, or existing shell com
 Lead with the recommendation:
 
 ```text
-Recommendation: <one next workflow artifact>.
+Recommendation: <one next workflow artifact toward <ideal end state>>.
 
 Evidence:
 - <session id or thread name>: <short pattern>
+
+Ideal end state:
+<what this should compound into if the pattern keeps proving out>
 
 Why this, not something heavier:
 <artifact boundary reasoning>

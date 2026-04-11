@@ -15,12 +15,14 @@ Answer these before recommending a new artifact:
 
 1. What repeated friction is this supposed to remove?
 2. Is the friction visible in recent sessions, a current task, or only a speculative idea?
-3. Can existing primitives solve it cleanly: `git`, `gh`, shell, Codex apps/connectors, MCP tools, `codex-threads`, or existing skills?
-4. Does the work require deterministic access to large/noisy state, stable IDs, pagination, structured JSON, or bounded output?
-5. Would a skill be enough to teach command order, safety rules, and verification?
-6. Would an `AGENTS.md` rule be better because it is a broad behavior preference?
-7. Would a memory extension be better because it only affects future memory consolidation?
-8. What is the validation contract for the proposed artifact?
+3. What is the ideal end state if this friction is solved well over repeated sessions?
+4. What is the smallest artifact that moves toward that end state without closing off the better design?
+5. Can existing primitives solve it cleanly: `git`, `gh`, shell, Codex apps/connectors, MCP tools, `codex-threads`, or existing skills?
+6. Does the work require deterministic access to large/noisy state, stable IDs, pagination, structured JSON, or bounded output?
+7. Would a skill be enough to teach command order, safety rules, and verification?
+8. Would an `AGENTS.md` rule be better because it is a broad behavior preference?
+9. Would a memory extension be better because it only affects future memory consolidation?
+10. What is the validation contract for the proposed artifact?
 
 ## Artifact Decision Table
 
@@ -70,6 +72,7 @@ Examples:
 ```text
 Decision: <build skill | build CLI | update AGENTS.md | update memory extension | write handoff | no artifact>.
 
+Ideal end state: <target workflow shape this decision moves toward>.
 Reason: <short rationale tied to the gate questions>.
 Validation: <fresh-session behavior check>.
 Risk: <only if meaningful>.

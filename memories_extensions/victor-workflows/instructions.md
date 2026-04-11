@@ -26,6 +26,7 @@ Promote patterns that are stable and repeatedly useful:
 - Clear ownership boundaries between CLI, plugin, skill, `AGENTS.md`, and memory extension responsibilities.
 - Installation and activation steps that prevent future confusion, such as plugin cache path, config key, or session restart requirements.
 - Validated search/debug paths that repeatedly lead to the right source of truth.
+- Victor's preference to keep the ideal end state explicit while still choosing the smallest next artifact that advances toward it.
 
 ## Preserve As Durable Guidance
 
