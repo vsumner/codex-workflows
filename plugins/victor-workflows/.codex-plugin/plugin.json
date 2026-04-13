@@ -19,6 +19,7 @@
     ],
     "defaultPrompt": [
       "Search my recent Codex threads for patterns worth turning into skills.",
+      "Look at my Codex and Claude work history with fresh eyes and improve codex-workflows.",
       "Find the Codex thread where this workflow went well.",
       "Summarize recent workflow friction from my Codex history.",
       "Reflect on this session and identify workflow improvements.",
