@@ -96,6 +96,12 @@ enum MessagesSubcommand {
         since: String,
         #[arg(long, default_value_t = 20)]
         limit: usize,
+        /// Include full matching message text. Defaults to bounded snippets.
+        #[arg(long)]
+        full: bool,
+        /// Maximum characters to include in each snippet when --full is not set.
+        #[arg(long, default_value_t = 320)]
+        snippet_chars: usize,
     },
 }
 
@@ -168,6 +174,7 @@ struct ThreadSummary {
     thread_name: Option<String>,
     updated_at: Option<DateTime<Utc>>,
     message_count: usize,
+    message_count_is_partial: bool,
     first_message_at: Option<DateTime<Utc>>,
     last_message_at: Option<DateTime<Utc>>,
     preview: Vec<String>,
@@ -178,7 +185,10 @@ struct MessageHit {
     session_id: String,
     thread_name: Option<String>,
     ts: DateTime<Utc>,
-    text: String,
+    snippet: String,
+    text_bytes: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    text: Option<String>,
 }
 
 fn main() -> Result<()> {
@@ -203,7 +213,9 @@ fn main() -> Result<()> {
                 query,
                 since,
                 limit,
-            } => search_messages(&codex_home, &query, &since, limit)?,
+                full,
+                snippet_chars,
+            } => search_messages(&codex_home, &query, &since, limit, full, snippet_chars)?,
         },
         Command::Events(command) => match command.command {
             EventsSubcommand::Read { session_id, limit } => {
@@ -311,9 +323,19 @@ fn resolve_thread(codex_home: &Path, query: &str, limit: usize) -> Result<serde_
 
 fn read_thread(codex_home: &Path, session_id: &str, limit: usize) -> Result<serde_json::Value> {
     let names = load_session_names(codex_home)?;
-    let messages = read_history(codex_home)?
+    let mut messages = read_history(codex_home)?
         .into_iter()
         .filter(|message| message.session_id == session_id)
+        .collect::<Vec<_>>();
+
+    if messages.is_empty()
+        && let Some(path) = find_rollout(codex_home, session_id)
+    {
+        messages = read_rollout_user_messages(&path, session_id)?;
+    }
+
+    let messages = messages
+        .into_iter()
         .take(limit)
         .map(|message| {
             json!({
@@ -336,6 +358,8 @@ fn search_messages(
     query: &str,
     since: &str,
     limit: usize,
+    full: bool,
+    snippet_chars: usize,
 ) -> Result<serde_json::Value> {
     let cutoff = parse_since(since)?;
     let needle = query.to_lowercase();
@@ -350,7 +374,9 @@ fn search_messages(
             thread_name: names.get(&message.session_id).cloned(),
             session_id: message.session_id,
             ts,
-            text: message.text,
+            snippet: snippet_for_query(&message.text, query, snippet_chars),
+            text_bytes: message.text.len(),
+            text: full.then_some(message.text),
         });
     }
     hits.sort_by_key(|hit| std::cmp::Reverse(hit.ts));
@@ -436,6 +462,7 @@ fn build_index(codex_home: &Path) -> Result<ThreadIndex> {
             (entry.id, (entry.thread_name, updated_at))
         })
         .collect::<HashMap<_, _>>();
+    let rollouts = rollout_paths(codex_home);
 
     let mut threads: HashMap<String, ThreadSummary> = HashMap::new();
     for message in read_history(codex_home)? {
@@ -449,6 +476,7 @@ fn build_index(codex_home: &Path) -> Result<ThreadIndex> {
                     .get(&message.session_id)
                     .and_then(|(_, updated_at)| *updated_at),
                 message_count: 0,
+                message_count_is_partial: false,
                 first_message_at: Some(ts),
                 last_message_at: Some(ts),
                 preview: Vec::new(),
@@ -462,15 +490,29 @@ fn build_index(codex_home: &Path) -> Result<ThreadIndex> {
     }
 
     for (session_id, (thread_name, updated_at)) in names {
-        threads.entry(session_id.clone()).or_insert(ThreadSummary {
-            session_id,
+        if threads.contains_key(&session_id) {
+            continue;
+        }
+
+        let mut summary = ThreadSummary {
+            session_id: session_id.clone(),
             thread_name: Some(thread_name),
             updated_at,
             message_count: 0,
+            message_count_is_partial: false,
             first_message_at: None,
             last_message_at: None,
             preview: Vec::new(),
-        });
+        };
+
+        if let Some(path) = rollouts.get(&session_id) {
+            for message in read_rollout_user_messages_limited(path, &session_id, Some(3))? {
+                apply_message_to_summary(&mut summary, &message);
+            }
+            summary.message_count_is_partial = summary.message_count == 3;
+        }
+
+        threads.insert(session_id, summary);
     }
 
     let mut threads = threads.into_values().collect::<Vec<_>>();
@@ -526,6 +568,74 @@ where
         }
     }
     Ok(records)
+}
+
+fn read_rollout_user_messages(path: &Path, session_id: &str) -> Result<Vec<HistoryRecord>> {
+    read_rollout_user_messages_limited(path, session_id, None)
+}
+
+fn read_rollout_user_messages_limited(
+    path: &Path,
+    session_id: &str,
+    limit: Option<usize>,
+) -> Result<Vec<HistoryRecord>> {
+    let file = File::open(path).with_context(|| format!("open {}", path.display()))?;
+    let mut messages = Vec::new();
+    for line in BufReader::new(file).lines() {
+        let line = line?;
+        let Ok(event) = serde_json::from_str::<serde_json::Value>(&line) else {
+            continue;
+        };
+        if let Some(message) = user_message_from_event(&event, session_id) {
+            messages.push(message);
+            if limit.is_some_and(|limit| messages.len() >= limit) {
+                break;
+            }
+        }
+    }
+    Ok(messages)
+}
+
+fn user_message_from_event(event: &serde_json::Value, session_id: &str) -> Option<HistoryRecord> {
+    if event.get("type")?.as_str()? != "event_msg" {
+        return None;
+    }
+
+    let payload = event.get("payload")?;
+    if payload.get("type")?.as_str()? != "user_message" {
+        return None;
+    }
+
+    let text = payload.get("message")?.as_str()?.trim();
+    if text.is_empty() {
+        return None;
+    }
+
+    Some(HistoryRecord {
+        session_id: session_id.to_owned(),
+        ts: event_timestamp(event)?,
+        text: text.to_owned(),
+    })
+}
+
+fn event_timestamp(event: &serde_json::Value) -> Option<i64> {
+    let timestamp = event.get("timestamp")?.as_str()?;
+    DateTime::parse_from_rfc3339(timestamp)
+        .ok()
+        .map(|dt| dt.timestamp())
+}
+
+fn apply_message_to_summary(summary: &mut ThreadSummary, message: &HistoryRecord) {
+    let ts = ts_to_datetime(message.ts);
+    summary.message_count += 1;
+    summary.first_message_at = summary.first_message_at.min(Some(ts)).or(Some(ts));
+    summary.last_message_at = summary.last_message_at.max(Some(ts)).or(Some(ts));
+    if summary.updated_at.is_none_or(|updated_at| updated_at < ts) {
+        summary.updated_at = Some(ts);
+    }
+    if summary.preview.len() < 3 {
+        summary.preview.push(truncate(&message.text, 240));
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -651,6 +761,11 @@ fn fuzzy_score(haystack: &str, query: &str) -> Option<usize> {
 }
 
 fn find_rollout(codex_home: &Path, session_id: &str) -> Option<PathBuf> {
+    let mut paths = rollout_paths(codex_home);
+    if let Some(path) = paths.remove(session_id) {
+        return Some(path);
+    }
+
     for root in [
         codex_home.join("sessions"),
         codex_home.join("archived_sessions"),
@@ -673,6 +788,50 @@ fn find_rollout(codex_home: &Path, session_id: &str) -> Option<PathBuf> {
     None
 }
 
+fn rollout_paths(codex_home: &Path) -> HashMap<String, PathBuf> {
+    let mut paths = HashMap::new();
+    for root in [
+        codex_home.join("sessions"),
+        codex_home.join("archived_sessions"),
+    ] {
+        if !root.exists() {
+            continue;
+        }
+        for entry in WalkDir::new(root).into_iter().filter_map(Result::ok) {
+            let path = entry.path();
+            if !path.is_file() {
+                continue;
+            }
+            let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
+                continue;
+            };
+            if let Some(session_id) = session_id_from_rollout_filename(file_name) {
+                paths.insert(session_id.to_owned(), path.to_path_buf());
+            }
+        }
+    }
+    paths
+}
+
+fn session_id_from_rollout_filename(file_name: &str) -> Option<&str> {
+    let stem = file_name.strip_suffix(".jsonl")?;
+    if !stem.starts_with("rollout-") {
+        return Some(stem);
+    }
+    if stem.len() < 36 {
+        return None;
+    }
+    let session_id = &stem[stem.len() - 36..];
+    if session_id
+        .chars()
+        .all(|c| c.is_ascii_hexdigit() || c == '-')
+    {
+        Some(session_id)
+    } else {
+        None
+    }
+}
+
 fn truncate(text: &str, max_chars: usize) -> String {
     let mut chars = text.chars();
     let truncated = chars.by_ref().take(max_chars).collect::<String>();
@@ -681,6 +840,39 @@ fn truncate(text: &str, max_chars: usize) -> String {
     } else {
         truncated
     }
+}
+
+fn snippet_for_query(text: &str, query: &str, max_chars: usize) -> String {
+    if max_chars == 0 {
+        return String::new();
+    }
+
+    let query = query.to_lowercase();
+    let text_lower = text.to_lowercase();
+    let Some(byte_start) = text_lower.find(&query) else {
+        return truncate(text, max_chars);
+    };
+
+    let char_positions = text.char_indices().map(|(idx, _)| idx).collect::<Vec<_>>();
+    let match_char_start = char_positions
+        .iter()
+        .position(|idx| *idx >= byte_start)
+        .unwrap_or(char_positions.len());
+    let context = max_chars.saturating_sub(query.chars().count()).min(80) / 2;
+    let char_start = match_char_start.saturating_sub(context);
+
+    let mut snippet = text
+        .chars()
+        .skip(char_start)
+        .take(max_chars)
+        .collect::<String>();
+    if char_start > 0 {
+        snippet = format!("...{snippet}");
+    }
+    if text.chars().count() > char_start + max_chars {
+        snippet.push_str("...");
+    }
+    snippet
 }
 
 fn contains_word(text: &str, needle: &str) -> bool {
@@ -724,5 +916,109 @@ fn dir_status(path: &Path) -> serde_json::Value {
             "exists": false,
             "error": error.to_string(),
         }),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::Datelike;
+    use std::io::Write;
+    use std::time::SystemTime;
+
+    #[test]
+    fn snippets_center_the_query_and_avoid_full_text_dump() {
+        let text = format!("{} needle {}", "a".repeat(500), "b".repeat(500));
+        let snippet = snippet_for_query(&text, "needle", 80);
+
+        assert!(snippet.contains("needle"));
+        assert!(snippet.starts_with("..."));
+        assert!(snippet.ends_with("..."));
+        assert!(snippet.len() < text.len());
+    }
+
+    #[test]
+    fn event_msg_user_messages_are_extracted_from_rollout_events() {
+        let event = json!({
+            "type": "event_msg",
+            "timestamp": "2026-04-11T21:35:43.309Z",
+            "payload": {
+                "type": "user_message",
+                "message": "whats next"
+            }
+        });
+
+        let message = user_message_from_event(&event, "session-1").expect("message");
+
+        assert_eq!(message.session_id, "session-1");
+        assert_eq!(message.text, "whats next");
+        assert_eq!(ts_to_datetime(message.ts).year(), 2026);
+    }
+
+    #[test]
+    fn response_item_user_messages_are_ignored_to_avoid_duplicates() {
+        let event = json!({
+            "type": "response_item",
+            "timestamp": "2026-04-11T21:35:43.309Z",
+            "payload": {
+                "type": "message",
+                "role": "user",
+                "content": [{"type": "input_text", "text": "whats next"}]
+            }
+        });
+
+        assert!(user_message_from_event(&event, "session-1").is_none());
+    }
+
+    #[test]
+    fn rollout_messages_can_backfill_session_index_only_threads() -> Result<()> {
+        let codex_home = temp_codex_home()?;
+        std::fs::create_dir_all(codex_home.join("sessions"))?;
+        std::fs::write(codex_home.join("history.jsonl"), "")?;
+        std::fs::write(
+            codex_home.join("session_index.jsonl"),
+            r#"{"id":"session-1","thread_name":"Review empty thread","updated_at":"2026-04-11T21:35:43.309Z"}"#,
+        )?;
+
+        let mut rollout = File::create(codex_home.join("sessions").join("session-1.jsonl"))?;
+        writeln!(
+            rollout,
+            "{}",
+            json!({
+                "type": "event_msg",
+                "timestamp": "2026-04-11T21:35:43.309Z",
+                "payload": {
+                    "type": "user_message",
+                    "message": "Review recent sessions"
+                }
+            })
+        )?;
+
+        let index = build_index(&codex_home)?;
+        let thread = index
+            .threads
+            .iter()
+            .find(|thread| thread.session_id == "session-1")
+            .expect("thread");
+
+        assert_eq!(thread.message_count, 1);
+        assert!(!thread.message_count_is_partial);
+        assert_eq!(thread.preview, vec!["Review recent sessions"]);
+        assert!(thread.first_message_at.is_some());
+        assert!(thread.last_message_at.is_some());
+
+        std::fs::remove_dir_all(codex_home)?;
+
+        Ok(())
+    }
+
+    fn temp_codex_home() -> Result<PathBuf> {
+        let nanos = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)?
+            .as_nanos();
+        let path =
+            std::env::temp_dir().join(format!("codex-threads-test-{}-{nanos}", std::process::id()));
+        std::fs::create_dir_all(&path)?;
+        Ok(path)
     }
 }

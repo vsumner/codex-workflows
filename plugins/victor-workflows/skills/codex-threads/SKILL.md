@@ -20,6 +20,7 @@ Use the `codex-threads` CLI instead of reading raw `~/.codex` history directly. 
 3. Prefer narrow search before reading a thread:
    ```bash
    codex-threads --json messages search "query" --since 14d --limit 20
+   codex-threads --json messages search "query" --since 14d --limit 20 --full
    codex-threads --json threads resolve "fuzzy thread name"
    ```
 4. Read only the smallest useful window:
@@ -42,6 +43,7 @@ Then inspect only the session ids needed to support a concrete recommendation.
 ## Safety
 
 - The CLI is read-only except for its own cache/index.
+- Search returns bounded snippets by default. Use `--full` only when Victor explicitly asks for raw matching text or when the full message is necessary evidence.
 - Do not paste full raw transcripts unless Victor explicitly asks.
 - Cite session ids, thread names, and short evidence snippets when recommending a new workflow or skill.
 - If the CLI reports a stale/missing index, run `codex-threads --json sync` once and retry.

@@ -48,6 +48,32 @@ codex-threads --json events read <session-id> --limit 80
 
 Use event reads when the question depends on tool churn, failed commands, or whether the assistant used the right tools. Use message reads when the question is about Victor's prompts, approvals, and direction changes.
 
+## Retrospective Mode
+
+Use this mode when Victor asks to reflect on a session, review what happened, or learn from the current/recent work loop.
+
+The Codex-native version is:
+
+1. Gather bounded evidence with `codex-threads`; do not read raw transcript files directly.
+2. Identify friction, corrections, repeated patterns, discoveries, skill/CLI gaps, and documentation gaps.
+3. Separate quick wins from heavier artifacts:
+   - quick win: memory-extension guidance, small skill wording update, small doc clarification;
+   - heavier artifact: new CLI, new skill, new plugin surface, automation, or anything with write/publish risk.
+4. Use `artifact-gate` before recommending a new durable surface.
+5. Do not auto-implement risky changes. Implement only when Victor explicitly asks or the current request clearly asks to make the improvement.
+
+For a retrospective report, include:
+
+```text
+Recommendation: <one next improvement>.
+Evidence: <session ids, short snippets, counts>.
+Quick wins: <small safe updates, if any>.
+Needs approval/design: <larger artifacts, if any>.
+Validation contract: <fresh-session behavior that should change>.
+```
+
+If Victor links a Claude-oriented `/reflect` workflow, reuse the learning-loop shape, not the Claude mechanics: no Claude transcript paths, no Opus-specific delegation requirement, and no automatic memory writes unless the current task authorizes edits.
+
 ## Evaluation Rubric
 
 For each representative run, capture:
