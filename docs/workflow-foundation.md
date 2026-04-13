@@ -71,14 +71,11 @@ Use this order for workflow improvements:
 
 ## Near-Term Backlog
 
-1. Finish the memory-extension update that captures the harness-engineering lessons.
-2. Update `workflow-learning` so it knows how to use Claude history as evidence without copying Claudify's architecture.
-3. Add `review-fix-verify` as the next missing workflow skill from the 30-day history pass.
-4. Run 3-10 manual workflow-reflection passes using Codex and Claude history, then compare the output shape.
-5. Improve `codex-threads` with metrics only if those manual passes need them: tool calls, verification commands, changed files, compaction markers, publish actions, or command churn.
-6. Use the local Claudify `claude-threads` bounded search output in 3-10 manual workflow-reflection passes.
-7. Patch or wrap `claude-threads` only if those passes still show a noisy-state gap.
-8. Prototype read-only reports: morning commit pulse, upskill draft, and quality/doc drift report.
+1. Run 3-10 manual workflow-reflection passes using Codex and Claude history, then compare the output shape.
+2. Improve `codex-threads` with metrics only if those manual passes need them: tool calls, verification commands, changed files, compaction markers, publish actions, or command churn.
+3. Keep using Claudify `claude-threads search --json --limit N --matches N` and `claude-threads review --last N --json` as bounded Claude-history inputs.
+4. Patch or wrap `claude-threads` only if those passes still show a noisy-state gap.
+5. Prototype read-only reports: morning commit pulse, upskill draft, and quality/doc drift report.
 
 ## Deferred
 
