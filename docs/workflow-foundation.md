@@ -4,6 +4,8 @@ This is the current target architecture for `codex-workflows`. It is tailored to
 
 The goal is not to recreate Claudify or build a custom Codex runner. The goal is to make Codex better at Victor's work by giving it the right local context, narrow deterministic evidence tools, and durable workflow judgment without bloating every turn.
 
+Treat the context window as the computation boundary. Everything loaded into it is a context fragment: instructions, docs, tool output, history snippets, memory, and user intent. The workflow layer exists to retrieve, shape, and inject only the fragments that change the result.
+
 ## Architecture
 
 Use this stack:
@@ -24,14 +26,19 @@ Use this stack:
 
 4. Small deterministic CLIs expose noisy state.
    - `codex-threads` is justified because raw Codex history is large, noisy, and needs bounded JSON access.
-   - Claudify's `claude-threads search --json --limit N --matches N` is the preferred Claude-history evidence path; use `--verbose` only when full session payloads are necessary.
+   - Claudify's `claude-threads search --json --limit N --matches N` and `claude-threads review --last N --json` are preferred Claude-history evidence paths; use `--verbose` only when full session payloads are necessary.
    - Reject CLIs that only aggregate `git`, `gh`, or one stable shell command.
 
-5. Mechanical checks preserve taste.
+5. Experiential memory stays external until it earns retrieval.
+   - Session traces, review comments, failed commands, and edits are external memory, not always-loaded instructions.
+   - Distill traces into skills, docs, memory-extension guidance, tests, or bounded indexes only after representative examples show the pattern matters.
+   - Search and retrieval quality matter more than storing more text. If fragments conflict or arrive without purpose, they become noise.
+
+6. Mechanical checks preserve taste.
    - Capture repeated preferences as tests, lints, schemas, stale-doc checks, quality-score docs, and remediation-rich errors when possible.
    - Use prose skills for judgment that cannot be made mechanical yet.
 
-6. Automations graduate slowly.
+7. Automations graduate slowly.
    - Start with read-only reports.
    - Promote only after 3-10 representative manual runs produce useful output.
    - Require explicit gates before write/publish automations.

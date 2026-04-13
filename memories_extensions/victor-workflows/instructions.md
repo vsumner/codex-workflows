@@ -32,6 +32,7 @@ Promote patterns that are stable and repeatedly useful:
 - Resolver patterns that say what context to load for a task type, such as architecture review, review-fix-verify, Swift/macOS work, app verification, project-transfer analysis, or workflow reflection.
 - Feedback-loop patterns that make Codex more autonomous without bloating prompt context: per-worktree boot commands, bounded logs/metrics/traces, local documentation indexes, quality-score docs, stale-doc checks, and agent-readable lint/test failures.
 - The promotion ladder for workflow improvements: run manually on 3-10 representative cases, show output, codify as a skill when useful, add a CLI only for noisy deterministic state, then consider draft/scheduled automation only after idempotency and approval gates are clear.
+- Context-fragment framing: treat the context window as the computation boundary, and treat instructions, docs, tool output, history snippets, and memory as external fragments that should be retrieved, shaped, and injected only when they change the result.
 
 ## Preserve As Durable Guidance
 
@@ -47,6 +48,7 @@ Preserve as repo or user preference guidance when the pattern is proven:
 - Capture human taste as docs, tests, lints, quality scores, and remediation-rich error messages when possible; use prose guidance only when the judgment cannot be made mechanical yet.
 - Keep local docs and DocSet-style caches as preferred sources for up-to-date API/framework context when available, especially for Apple/macOS work.
 - Preserve the distinction between read-only/draft automations and write/publish automations. Morning pulse and quality/doc reports can be early read-only candidates; green-PR and Sentry-style fixers need stronger gates.
+- Keep experiential memory external by default. Distill traces, review comments, failed commands, and edit deltas into bounded indexes, skills, docs, or mechanical checks only after repeated examples show they are useful.
 
 ## Do Not Promote
 
