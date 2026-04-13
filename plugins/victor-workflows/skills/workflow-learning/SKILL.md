@@ -60,12 +60,12 @@ Prefer bounded `claude-threads` commands over raw Claude transcript paths:
 
 ```bash
 ~/src/github.com/vsumner/claudify/plugins/claudify/bin/claude-threads index --json
-~/src/github.com/vsumner/claudify/plugins/claudify/bin/claude-threads search "query" --json
+~/src/github.com/vsumner/claudify/plugins/claudify/bin/claude-threads search "query" --json --limit 20 --matches 3
 ~/src/github.com/vsumner/claudify/plugins/claudify/bin/claude-threads review --last 20 --json
 ~/src/github.com/vsumner/claudify/plugins/claudify/bin/claude-threads show <session-id> --json
 ```
 
-If the Claude tool emits oversized full-session objects for a repeated workflow, treat that as evidence for patching or wrapping the Claude tool. Do not solve it by pasting raw history into context.
+Default `search --json` output should be compact. Use `--verbose` only when the full session payload is necessary evidence. If the Claude tool regresses to oversized full-session objects for a repeated workflow, treat that as evidence for patching or wrapping the Claude tool. Do not solve it by pasting raw history into context.
 
 Use `docs/workflow-foundation.md` as the current target architecture when the reflection is about `codex-workflows` itself.
 

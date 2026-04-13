@@ -20,11 +20,11 @@ Use this stack:
 3. Fat skills encode judgment.
    - Skills should teach routing, process, safety boundaries, and verification expectations.
    - Prefer a small high-quality skill set over a large catalog.
-   - Current core set: repo orientation, artifact gating, Codex thread search, workflow learning, environment debugging.
+   - Current core set: repo orientation, review-fix-verify, artifact gating, Codex thread search, workflow learning, environment debugging.
 
 4. Small deterministic CLIs expose noisy state.
    - `codex-threads` is justified because raw Codex history is large, noisy, and needs bounded JSON access.
-   - A Claude-history wrapper or patch is justified only if `claude-threads` remains too noisy for repeated evidence passes.
+   - Claudify's `claude-threads search --json --limit N --matches N` is the preferred Claude-history evidence path; use `--verbose` only when full session payloads are necessary.
    - Reject CLIs that only aggregate `git`, `gh`, or one stable shell command.
 
 5. Mechanical checks preserve taste.
@@ -35,6 +35,12 @@ Use this stack:
    - Start with read-only reports.
    - Promote only after 3-10 representative manual runs produce useful output.
    - Require explicit gates before write/publish automations.
+
+## Naming
+
+Keep the technical plugin id `victor-workflows` for now.
+
+`workflows` is cleaner, but a full rename touches plugin identity, local cache paths, memory-extension paths, install scripts, docs, and user config. That churn is not worth taking while the workflow layer is still personal and still proving its shape. Revisit the rename only if the plugin becomes less Victor-specific or if a migration plan updates all paths in one pass.
 
 ## Resolver Model
 
@@ -67,10 +73,12 @@ Use this order for workflow improvements:
 
 1. Finish the memory-extension update that captures the harness-engineering lessons.
 2. Update `workflow-learning` so it knows how to use Claude history as evidence without copying Claudify's architecture.
-3. Run 3-10 manual workflow-reflection passes using Codex and Claude history, then compare the output shape.
-4. Improve `codex-threads` with metrics only if those manual passes need them: tool calls, verification commands, changed files, compaction markers, publish actions, or command churn.
-5. Evaluate `claude-threads` output size. Patch or wrap it only if its search/show output remains too noisy for repeated evidence passes.
-6. Prototype read-only reports: morning commit pulse, upskill draft, and quality/doc drift report.
+3. Add `review-fix-verify` as the next missing workflow skill from the 30-day history pass.
+4. Run 3-10 manual workflow-reflection passes using Codex and Claude history, then compare the output shape.
+5. Improve `codex-threads` with metrics only if those manual passes need them: tool calls, verification commands, changed files, compaction markers, publish actions, or command churn.
+6. Use the local Claudify `claude-threads` bounded search output in 3-10 manual workflow-reflection passes.
+7. Patch or wrap `claude-threads` only if those passes still show a noisy-state gap.
+8. Prototype read-only reports: morning commit pulse, upskill draft, and quality/doc drift report.
 
 ## Deferred
 

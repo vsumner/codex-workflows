@@ -14,6 +14,7 @@
       "history-search",
       "repo-orientation",
       "workflow-learning",
+      "review-fix-verify",
       "artifact-gating",
       "environment-debugging"
     ],
@@ -24,6 +25,7 @@
       "Summarize recent workflow friction from my Codex history.",
       "Reflect on this session and identify workflow improvements.",
       "What should we do next in this repo?",
+      "Address this review feedback by verifying each finding against the current code before changing anything.",
       "Decide whether this workflow idea should be a skill, CLI, memory rule, or nothing.",
       "Debug this local dev environment failure and identify the smallest verified fix."
     ],

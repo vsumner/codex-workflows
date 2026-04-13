@@ -21,6 +21,7 @@ Do not add machinery just to aggregate existing primitives. Prefer `git`, `gh`, 
 - `plugins/victor-workflows`: Codex plugin bundle with fat workflow skills and small deterministic CLI guidance.
   - `codex-threads`: use the local history CLI instead of reading raw transcripts.
   - `repo-orientation`: answer "what's next?" and branch/PR readiness questions using `git`, `gh`/GitHub, handoff state, and `codex-threads` only when needed.
+  - `review-fix-verify`: handle review feedback by verifying each finding against current code, fixing only true issues, and running targeted proof.
   - `workflow-learning`: mine recent Codex sessions for repeated friction and recommend the smallest durable artifact.
   - `artifact-gate`: decide whether a proposed workflow artifact should be a skill, CLI, `AGENTS.md` rule, memory extension, handoff, docs, or nothing.
   - `debug-environment`: diagnose local dev, package-manager, workspace, and toolchain failures without blind reruns or broad rollback.
