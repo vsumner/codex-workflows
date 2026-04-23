@@ -1,0 +1,15 @@
+[package]
+name = "codex-threads"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow = "1.0.100"
+chrono = { version = "0.4.42", features = ["serde"] }
+clap = { version = "4.5.50", features = ["derive"] }
+dirs = "6.0.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+walkdir = "2.5.0"
