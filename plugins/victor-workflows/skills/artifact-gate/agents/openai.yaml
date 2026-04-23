@@ -1,3 +1,0 @@
-display_name: Artifact Gate
-short_description: Decide whether workflow friction deserves a skill, CLI, AGENTS rule, memory extension, handoff, or nothing.
-default_prompt: Evaluate whether this proposed workflow artifact is necessary or duplicates existing Codex primitives.

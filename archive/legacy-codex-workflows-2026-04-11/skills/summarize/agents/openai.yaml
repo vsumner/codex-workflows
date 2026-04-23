@@ -1,4 +1,0 @@
-interface:
-  display_name: "Summarize"
-  short_description: "Summarize URLs, files, and media quickly"
-  default_prompt: "Use $summarize to summarize a URL, file, or media path with the desired model and output length."

@@ -1,6 +1,5 @@
+# Rust
 /target/
-/.codex/
-/.DS_Store
-/.idea/
-/.vscode/
-*.log
+
+# OS
+.DS_Store

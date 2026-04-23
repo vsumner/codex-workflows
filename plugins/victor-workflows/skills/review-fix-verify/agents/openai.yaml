@@ -1,3 +1,0 @@
-display_name: Review Fix Verify
-short_description: Verify review findings against current code, fix only true issues, and run targeted proof.
-default_prompt: Address this review feedback by verifying each finding against the current code before changing anything.

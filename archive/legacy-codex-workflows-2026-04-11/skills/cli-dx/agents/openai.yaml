@@ -1,4 +1,0 @@
-interface:
-  display_name: "CLI Developer Experience"
-  short_description: "Design better, accessible, scriptable CLI UX"
-  default_prompt: "Use $cli-dx to review this CLI command or flow and propose DX improvements for usability, accessibility, and automation."

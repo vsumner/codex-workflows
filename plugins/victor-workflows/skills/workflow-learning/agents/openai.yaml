@@ -1,3 +1,0 @@
-display_name: Workflow Learning
-short_description: Mine recent Codex sessions and recommend the smallest durable workflow artifact.
-default_prompt: Review my recent Codex sessions and tell me what workflow friction should become a skill, CLI, memory rule, or nothing.
