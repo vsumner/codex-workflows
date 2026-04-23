@@ -1,0 +1,5 @@
+{
+  "name": "victor-workflows",
+  "description": "Minimal fresh scaffold for Codex workflow skills.",
+  "skills": "./skills"
+}

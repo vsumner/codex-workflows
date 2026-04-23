@@ -1,5 +1,8 @@
-# Rust
+# Rust build outputs
 /target/
+
+# Local workflow state
+/.codex-workflow/
 
 # OS
 .DS_Store
